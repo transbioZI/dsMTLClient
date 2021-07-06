@@ -26,7 +26,30 @@
 
 
 
+
+################################################################################
+#' @title Solver of Lasso regression
+#' @description Solver of Lasso regression
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param lam The hyper-parameter controlling the sparsity   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+
+#' @return The converged result of optimization
+#' @details Solver of Lasso regression
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
+  #' @title Proximal operator for L1
+  #' @keywords internal
+  #' @param W The current estimate of W 
+  #' @param lam lambda value
+  #' @return The proximal point of W
   proximal_l1 <- function (W, lambda ){
     p <- abs(W) - lambda
     p=p*(p>0)
@@ -34,13 +57,18 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
     return(Wp)
   }
   
+  #' @title L1 term evaluation
+  #' @keywords internal
+  #' @param W The current estimate of the variables 
+  #' @param lam lambda value
+  #' @return non-smooth part of objective
   nonsmooth_eval <- function (W, lam){
     return(lam*sum(abs(W)))
   }  
   
   # Main algorithm
   Obj <- vector(); 
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nSubs=sapply(dims, function(x)x[1])
   nFeats=dims[[1]][2]
   nTasks= length(dims)
@@ -72,7 +100,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
     ws=round(ws, nDigits)
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LS_iter_updateDS', w.text, X, Y)
-    iter_update=datashield.aggregate(datasources, cally)  
+    iter_update=DSI::datashield.aggregate(datasources, cally)  
     Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs))) + 2*C*ws
     Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs))) + C* sum((ws)^2)
     log.niterCall=log.niterCall+1
@@ -82,7 +110,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
       wzp <- proximal_l1(ws - Gws/gamma, lam / gamma);
       w.text=paste0(as.character(round(wzp, nDigits)), collapse=",")
       cally <- call('LS_funcVal_evalDS', w.text, X, Y)
-      rData=datashield.aggregate(datasources, cally)
+      rData=DSI::datashield.aggregate(datasources, cally)
       Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))+ C* sum((wzp)^2)
       log.nfuncCall=log.nfuncCall+1
       
@@ -128,6 +156,23 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 
 
 
+################################################################################
+#' @title Solver of logistic regression with Lasso
+#' @description Solver of logistic regression with Lasso
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param lam The hyper-parameter controlling the sparsity   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+
+#' @return The converged result of optimization
+#' @details Solver of logistic regression with Lasso
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
   proximal_l1 <- function (W, lambda ){
     p <- abs(W) - lambda
@@ -143,7 +188,7 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
   
   # Main algorithm
   Obj <- vector(); 
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nSubs=sapply(dims, function(x)x[1])
   nFeats=dims[[1]][2]
   nTasks= length(dims)
@@ -177,7 +222,7 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
     ws=round(ws, nDigits)
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LR_iter_updateDS', w.text, X, Y)
-    iter_update=datashield.aggregate(datasources, cally)  
+    iter_update=DSI::datashield.aggregate(datasources, cally)  
     Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs))) + 2*C*ws
     Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs))) + C* sum((ws)^2)
     log.niterCall=log.niterCall+1
@@ -187,7 +232,7 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
       wzp <- proximal_l1(ws - Gws/gamma, lam / gamma);
       w.text=paste0(as.character(round(wzp, nDigits)), collapse=",")
       cally <- call('LR_funcVal_evalDS', w.text, X, Y)
-      rData=datashield.aggregate(datasources, cally)
+      rData=DSI::datashield.aggregate(datasources, cally)
       Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))+ C* sum((wzp)^2)
       log.nfuncCall=log.nfuncCall+1
       
@@ -230,24 +275,44 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 
 
 
+################################################################################
+#' @title Training a regularization tree with Lasso
+#' @description Training a regularization tree with Lasso
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
 
+#' @return The regularization tree
+#' @details Training a regularization tree with Lasso
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, C=0, 
                        opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
   
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
-    datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+    DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
   
   #initialize final result
   fit=list();fit$ws=vector();fit$Logs=vector();fit$Obj=vector();fit$gamma=vector();fit$type=type
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
-  xys=datashield.aggregate(datasources, call("xtyDS",X, Y ))
+  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
   xys=rowSums(do.call(cbind, xys))/sum(nSubs)
   xy_norm=max(abs(xys))
   
@@ -316,19 +381,39 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
 
 
 
+################################################################################
+#' @title Cross-site cross-validation
+#' @description Cross-site cross-validation
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
 
+#' @return The result of cross-validation
+#' @details Cross-site cross-validation
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nlambda=10, lambda=NULL,
                            opts=list(init=0, maxIter=50, tol=0.001, ter=2), C=0, datasources=NULL, nDigits=10, intercept=F){
 
     #intercept model
     if (intercept){
       Xnew=paste0(X, ".intercept")
-      datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+      DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
       X=Xnew
     }
     
   cvResult=list(); cvResult$type=type; cvResult$C=C; 
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
@@ -366,37 +451,59 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
 }
 
 
-getCVPartition <- function(nSubs, cv_fold){
-  randIdx <- lapply(nSubs, function(x) sample(1:x, x, replace = FALSE)) 
-  task_num=length(nSubs)
-  
-  cvPar = {};
-  for (cv_idx in 1: cv_fold){
-    cvTrain = {};
-    cvTest = {};
-    
-    #stratified cross validation
-    for (t in 1: task_num){
-      te_idx <- seq(cv_idx, nSubs[t], by=cv_fold)
-      tr_idx <- seq(1,nSubs[t])[!is.element(1:nSubs[t], te_idx)]
-
-      cvTrain[[t]] = randIdx[[t]][tr_idx]
-      cvTest[t] = list(randIdx[[t]][te_idx])
-    }
-    cvPar[[cv_idx]]=list(cvTrain=cvTrain, cvTest=cvTest);
-  }
-  return(cvPar)
-}
 
 
+################################################################################
+#' @title In-site cross-validation
+#' @description In-site cross-validation
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nfolds The number of folds
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
 
+#' @return The result of cross-validation
+#' @details Cross-site cross-validation
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL,
                           opts=list(init=0, maxIter=50, tol=0.01, ter=2), C=0,  datasources=NULL, nDigits=10, intercept=F){
+  
+  getCVPartition <- function(nSubs, cv_fold){
+    randIdx <- lapply(nSubs, function(x) sample(1:x, x, replace = FALSE)) 
+    task_num=length(nSubs)
+    
+    cvPar = {};
+    for (cv_idx in 1: cv_fold){
+      cvTrain = {};
+      cvTest = {};
+      
+      #stratified cross validation
+      for (t in 1: task_num){
+        te_idx <- seq(cv_idx, nSubs[t], by=cv_fold)
+        tr_idx <- seq(1,nSubs[t])[!is.element(1:nSubs[t], te_idx)]
+        
+        cvTrain[[t]] = randIdx[[t]][tr_idx]
+        cvTest[t] = list(randIdx[[t]][te_idx])
+      }
+      cvPar[[cv_idx]]=list(cvTrain=cvTrain, cvTest=cvTest);
+    }
+    return(cvPar)
+  }
   
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
-    datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+    DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
   
@@ -404,7 +511,7 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
   #source("./dsMTLClient/ds.calcMSE.R")
   #source("./dsMTLClient/ds.calcMCR.R")
   
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
@@ -458,17 +565,5 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
   }
   return(cvResult)
 }
-
-
-
-# Lasso_predict=function(fit, newx){
-#   if(fit$type=="regress"){
-#     yhat=newx%*%fit$ws
-#     
-#   }else if(fit$type=="classify"){
-#     yhat=1/(1+exp(-newx%*%fit$ws))
-#   }
-#   return(yhat)
-# }
 
 

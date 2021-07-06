@@ -1,6 +1,50 @@
+################################################################################
+#
+# Package Name: dsMTLClient
+# Description: The client-side functions of dsMTL
+#
+# dsMTL - a computational framework for privacy-preserving, distributed 
+#   multi-task machine learning
+# Copyright (C) 2021  Han Cao (han.cao@zi-mannheim.de)
+# All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+################################################################################
 
 
 
+
+
+################################################################################
+#' @title Solver of Federated integrative NMF
+#' @description Solver of Federated NMF
+#' @param Xs The data matrices of multiple cohorts 
+#' @param newH The starting point shared component matrix H
+#' @param rank The hyper-parameter indicate the number of  latent variables
+#' @param lam   The hyper-parameter associated with L2 term
+#' @param Sp   The hyper-parameter controlling the sparsity
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+
+#' @return The converged result of optimization
+#' @details Solver of Federated NMF
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.solveINMF=function(datasources, Xs, newH, rank=2, lam=1, Sp=1, opts=list(maxIter=40, tol=0.01, ter=2), nDigits=10){
   
   ds.updateOtherMats=function( datasources){
@@ -13,7 +57,7 @@ ds.solveINMF=function(datasources, Xs, newH, rank=2, lam=1, Sp=1, opts=list(maxI
   
   ds.updateH = function(datasources) {
     cally = call("updateHDS", Xs, "Vars$H", "Vars$W", "Vars$Hv", Sp, lam)
-    collectInfo = datashield.aggregate(datasources, cally)  
+    collectInfo = DSI::datashield.aggregate(datasources, cally)  
     
     num = lapply(collectInfo, function(x) x[[1]])
     den = lapply(collectInfo, function(x) x[[2]])
@@ -90,17 +134,35 @@ ds.solveINMF=function(datasources, Xs, newH, rank=2, lam=1, Sp=1, opts=list(maxI
 }
 
 
+################################################################################
+#' @title Training models of dsMTL_iNMF
+#' @description Training models of dsMTL_iNMF
+#' @param Xs The data matrices of multiple cohorts 
+#' @param myServerKey The key was granted by the server administrator to access the raw data
+#' @param n_initializations The number of variables' initializations 
+#' @param rank The hyper-parameter indicate the number of  latent variables
+#' @param lam   The hyper-parameter associated with L2 term
+#' @param Sp   The hyper-parameter controlling the sparsity
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
 
+#' @return The converged result of optimization
+#' @details Training models of dsMTL_iNMF
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.MTL_iNMF_Train = function(datasources, Xs, rank, myServerKey=NULL, n_initializations, Sp, lam, opts, nDigits=10) {
   #source("./dsMTLClient/ds.getMyServerData.R")
   
   ds.initMatrices=function(datasources, seedH){
     cally <- call('initMatricesDS', rank, Xs, seedH)
-    datashield.assign.expr(conns = datasources, symbol = "Vars", expr = cally)
+    DSI::datashield.assign.expr(conns = datasources, symbol = "Vars", expr = cally)
   }
   
   nSites = length(datasources)
-  data.dim=datashield.aggregate(datasources, call("dimDS",Xs))
+  data.dim=DSI::datashield.aggregate(datasources, call("dimDS",Xs))
   nRow = data.dim[[1]][1]
   nCols = sapply(1:nSites, function(x) data.dim[[x]][2]  )
   
@@ -117,7 +179,7 @@ ds.MTL_iNMF_Train = function(datasources, Xs, rank, myServerKey=NULL, n_initiali
   } else {
     Hvs_all=list()
     Ws_all=list()
-    datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
+    DSI::datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
   }
   
   
@@ -132,7 +194,7 @@ ds.MTL_iNMF_Train = function(datasources, Xs, rank, myServerKey=NULL, n_initiali
     seedH=sample(1000,1)
     ds.initMatrices(datasources = datasources, seedH)
     set.seed(seedH)
-    newH=matrix(data = runif(n=nRow*rank, min = 0, max = 2), nrow = nRow, ncol = rank)
+    newH=matrix(data = stats::runif(n=nRow*rank, min = 0, max = 2), nrow = nRow, ncol = rank)
     
     
     ##-------------------------------------------------------------------##

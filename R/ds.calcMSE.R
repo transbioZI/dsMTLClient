@@ -30,6 +30,8 @@
 #' @title Calculate mean-squared error (MSE)
 #' @description Calculate mean-squared error (MSE) on the target server
 #' @param ws The list of coefficient vectors for all servers   
+#' @param X The name of design matrices   
+#' @param Y The name of labels   
 #' @param datasourceTest  The connection of the target server
 #' @param average The indicator to average or not the prediction probability over all coefficient vectors
 
@@ -45,6 +47,6 @@ ds.calcMSE = function(ws, datasourceTest, X, Y, average=T){
   ws.vec=c(nrow(ws), as.vector(ws))
   ws.text=paste0(as.character(ws.vec), collapse=",")
   cally <- call('calcMSEDS', ws.text, X, Y, average)
-  mse=datashield.aggregate(datasourceTest, cally)  
+  mse=DSI::datashield.aggregate(datasourceTest, cally)  
   return(mse)
 }

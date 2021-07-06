@@ -30,8 +30,9 @@
 ################################################################################
 #' @title Set data matrix on server
 #' @description set data matrix from the valid client
-#' @param remoteKey The identify of the access. myServerKey$server contained a valid server connection. myServerKey$key contained a valid key.
+#' @param myServerKey The identify of the access. myServerKey$server contained a valid server connection. myServerKey$key contained a valid key.
 #' @param data  The name of the target matrix on the server
+#' @param symbol  The name of the new variable
 
 #' @return The requested matrix or error message 
 #' @details The "Datakey" mechanism allowed the valid client upload the data matrix directly into the memory of the server. The validity 
@@ -46,10 +47,10 @@
 
 
 ds.setMyServerData= function(myServerKey, data, symbol){
-  datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
+  DSI::datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
   
   data.vec=c(nrow(data), as.vector(data))
   data.text=paste0(as.character(data.vec), collapse=",")
   cally = call("setMyServerDataDS", myServerKey$key, data.text)
-  datashield.assign.expr(conns = myServerKey$server, symbol = symbol, expr =  cally)
+  DSI::datashield.assign.expr(conns = myServerKey$server, symbol = symbol, expr =  cally)
 }

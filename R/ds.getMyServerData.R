@@ -28,7 +28,8 @@
 ################################################################################
 #' @title Get data from server
 #' @description Retrieve the data matrix from the server
-#' @param remoteKey The identify of the access. myServerKey$server contained a valid server connection. myServerKey$key contained a valid key.
+#' @param myServerKey The identify of the access. myServerKey$server contained a valid server connection. 
+#' myServerKey$key contained a valid key.
 #' @param data  The name of the target matrix on the server
 
 #' @return The requested matrix or error message 
@@ -43,9 +44,9 @@
 
 
 ds.getMyServerData= function(myServerKey, data){
-  datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
+  DSI::datashield.assign.table(conns = myServerKey$server, symbol = "localKey", table = "serverDataKey.myKey" )
   cally = call("getMyServerDataDS", myServerKey$key, data)
-  rData = datashield.aggregate(myServerKey$server, cally)  
+  rData = DSI::datashield.aggregate(myServerKey$server, cally)  
   
   return(rData)
 }

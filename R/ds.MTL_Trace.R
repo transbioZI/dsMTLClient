@@ -1,10 +1,53 @@
+################################################################################
+#
+# Package Name: dsMTLClient
+# Description: The client-side functions of dsMTL
+#
+# dsMTL - a computational framework for privacy-preserving, distributed 
+#   multi-task machine learning
+# Copyright (C) 2021  Han Cao (han.cao@zi-mannheim.de)
+# All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+################################################################################
+
+
+
+
+
+################################################################################
+#' @title Solver of FeMTL with least-square loss and low-rank structure
+#' @description Solver of FeMTL with least-square loss and low-rank structure
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param lam The hyper-parameter controlling the sparsity   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+
+#' @return The converged result of optimization
+#' @details Solver of FeMTL with least-square loss and low-rank structure
+
+#' @export  
+#' @author Han Cao
+################################################################################
+
 ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
-  #min_W sum_k ||Y_k - X_k*W_k||_2^2 +lam||W||_21 + C||W||^2_2 
-  #with starting points: 0 or W_0; Data: X and Y; Hyper-parameters: lam, c
-  
   proximal_Trace <- function (W, lambda ){
     #prox_f(x)=(1-lam/(max{||x||, lam}))x
-    requireNamespace('corpcor')
     eigen <- corpcor::fast.svd(W)
     d <- eigen$d
     thresholded_value = d - lambda;
@@ -18,7 +61,6 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
   }
   
   nonsmooth_eval <- function (W){
-    requireNamespace('corpcor')
     return(sum(corpcor::fast.svd(W)$d)*lam)
   }  
   
@@ -30,7 +72,7 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
       return(cally)
     })
     names(callys)=names(datasources)
-    iter_update=datashield.aggregate(datasources, callys)  
+    iter_update=DSI::datashield.aggregate(datasources, callys)  
     grad_w=sapply(iter_update, function(x)x[[1]]); 
     funcVal=sapply(iter_update, function(x)x[[2]]); 
     
@@ -47,7 +89,7 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
       return(cally)
     }) 
     names(callys)=names(datasources)
-    func=datashield.aggregate(datasources, callys)  
+    func=DSI::datashield.aggregate(datasources, callys)  
     return(sum(unlist(func)) + C * norm(W, 'f')^2)
   }
   
@@ -55,7 +97,7 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
   # Main algorithm
   #################################  
   Obj <- vector(); 
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sum(sapply(dims, function(x)x[1]))
   nTasks=length(dims)
@@ -134,14 +176,29 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
 
 
 
+################################################################################
+#' @title Solver of FeMTL with logistic loss and low-rank structure
+#' @description Solver of FeMTL with logistic loss and low-rank structure
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param lam The hyper-parameter controlling the sparsity   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
 
+#' @return The converged result of optimization
+#' @details Solver of FeMTL with logistic loss and low-rank structure
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
   #min_W sum_k{log(1+exp(-Y_k*X_k*W_k))} +lam||W||_21 + c||W||^2_2 
   #with starting points: 0 or W_0; Data: X and Y; Hyper-parameters: lam, C
   
   proximal_Trace <- function (W, lambda ){
     #prox_f(x)=(1-lam/(max{||x||, lam}))x
-    requireNamespace('corpcor')
     eigen <- corpcor::fast.svd(W)
     d <- eigen$d
     thresholded_value = d - lambda;
@@ -155,7 +212,6 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
   }
   
   nonsmooth_eval <- function (W){
-    requireNamespace('corpcor')
     return(sum(corpcor::fast.svd(W)$d)*lam)
   }  
   
@@ -167,7 +223,7 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
       return(cally)
     })
     names(callys)=names(datasources)
-    iter_update=datashield.aggregate(datasources, callys)  
+    iter_update=DSI::datashield.aggregate(datasources, callys)  
     grad_w=sapply(iter_update, function(x)x[[1]]); 
     funcVal=sapply(iter_update, function(x)x[[2]]); 
     
@@ -184,7 +240,7 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
       return(cally)
     }) 
     names(callys)=names(datasources)
-    func=datashield.aggregate(datasources, callys)  
+    func=DSI::datashield.aggregate(datasources, callys)  
     return(sum(unlist(func)) + C * norm(W, 'f')^2)
   }
   
@@ -192,7 +248,7 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
   # Main algorithm
   #################################  
   Obj <- vector(); 
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nTasks=length(dims)
   
@@ -270,31 +326,50 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
 
 
 
+################################################################################
+#' @title Training a regularization tree for dsMTL_Trace
+#' @description Training a regularization tree for dsMTL_Trace
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
 
+#' @return The regularization tree
+#' @details Training a regularization tree for dsMTL_Trace
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.MTL_Trace_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.1, lambda=NULL, C=0, 
                             opts=list(init=0, maxIter=50, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
   
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
-    datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+    DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
   
   #initialize final result
   fit=list();fit$ws=list();fit$Logs=vector();fit$Obj=vector();fit$gamma=vector();fit$type=type
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
-  xys=datashield.aggregate(datasources, call("xtyDS",X, Y ))
+  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
   xys=sapply(1:nTasks, function(k)xys[[k]]/nSubs[k])
 
   #########################
   #for regression
   #########################
   if (type=="regress"){
-    
     eigen <- corpcor::fast.svd(xys)
     trace_norm=eigen$d[1]
     
@@ -328,7 +403,6 @@ ds.MTL_Trace_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ra
   #for classification
   #########################
   else if(type=="classify"){
-    
     eigen <- corpcor::fast.svd(xys/2)
     trace_norm=eigen$d[1]
     
@@ -368,17 +442,40 @@ ds.MTL_Trace_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ra
 
 
 
+
+
+################################################################################
+#' @title Cross-site cross-validation for dsMTL_Trace
+#' @description Cross-site cross-validation for dsMTL_Trace
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
+
+#' @return The result of cross-validation
+#' @details Cross-site cross-validation for dsMTL_Trace
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.MTL_Trace_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.1, nlambda=10, lambda=NULL,
                                 opts=list(init=0, maxIter=50, tol=0.01, ter=2), C=0, datasources=NULL, nDigits=10, intercept=F){
   
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
-    datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+    DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
   
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
@@ -417,35 +514,61 @@ ds.MTL_Trace_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.1,
 }
 
 
-getCVPartition <- function(nSubs, cv_fold){
-  randIdx <- lapply(nSubs, function(x) sample(1:x, x, replace = FALSE)) 
-  task_num=length(nSubs)
-  
-  cvPar = {};
-  for (cv_idx in 1: cv_fold){
-    # build cross validation data splittings for each task.
-    cvTrain = {};
-    cvTest = {};
-    
-    #stratified cross validation
-    for (t in 1: task_num){
-      te_idx <- seq(cv_idx, nSubs[t], by=cv_fold)
-      tr_idx <- seq(1,nSubs[t])[!is.element(1:nSubs[t], te_idx)]
-      cvTrain[[t]] = randIdx[[t]][tr_idx]
-      cvTest[t] = list(randIdx[[t]][te_idx])
-    }
-    cvPar[[cv_idx]]=list(cvTrain=cvTrain, cvTest=cvTest);
-  }
-  return(cvPar)
-}
 
+
+
+################################################################################
+#' @title In-site cross-validation for dsMTL_Trace
+#' @description In-site cross-validation for dsMTL_Trace
+#' @param X The design matrices of multiple cohorts 
+#' @param Y Label vectors of multiple cohorts
+#' @param type regression(=regress) or classification(=classify)
+#' @param nfolds The number of folds
+#' @param nlambda The length of lambda sequence
+#' @param lam_ratio smallest lambda / largest lambda
+#' @param lambda The lambda sequence   
+#' @param C   The hyper-parameter associated with L2 term
+#' @param opts Options controlling the optimization procedure     
+#' @param datasources The connections of servers   
+#' @param nDigits The number of digits rounded for each number prepared for network transmission 
+#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
+
+#' @return The result of cross-validation
+#' @details In-site cross-validation for dsMTL_Trace
+
+#' @export  
+#' @author Han Cao
+################################################################################
 ds.MTL_Trace_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL,
                                opts=list(init=0, maxIter=50, tol=0.01, ter=2), C=0, datasources=NULL, nDigits=10, intercept=F){
+  
+  getCVPartition <- function(nSubs, cv_fold){
+    randIdx <- lapply(nSubs, function(x) sample(1:x, x, replace = FALSE)) 
+    task_num=length(nSubs)
+    
+    cvPar = {};
+    for (cv_idx in 1: cv_fold){
+      # build cross validation data splittings for each task.
+      cvTrain = {};
+      cvTest = {};
+      
+      #stratified cross validation
+      for (t in 1: task_num){
+        te_idx <- seq(cv_idx, nSubs[t], by=cv_fold)
+        tr_idx <- seq(1,nSubs[t])[!is.element(1:nSubs[t], te_idx)]
+        cvTrain[[t]] = randIdx[[t]][tr_idx]
+        cvTest[t] = list(randIdx[[t]][te_idx])
+      }
+      cvPar[[cv_idx]]=list(cvTrain=cvTrain, cvTest=cvTest);
+    }
+    return(cvPar)
+  }
+  
   
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
-    datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
+    DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
   
@@ -453,7 +576,7 @@ ds.MTL_Trace_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_
   #source("./dsMTLClient/ds.calcMSE.R")
   #source("./dsMTLClient/ds.calcMCR.R")
   
-  dims=datashield.aggregate(datasources, call("dimDS",X ))
+  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
@@ -507,15 +630,3 @@ ds.MTL_Trace_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_
   return(cvResult)
 }
 
-
-
-# ds.MTL_Trace_predict=function(fit, newx){
-#   if(fit$type=="regress"){
-#     yhat=lapply(fit$ws, function(x)newx%*%x)
-#     
-#   }else if(fit$type=="classify"){
-#     yhat=lapply(fit$ws, function(x)1/(1+exp(-newx%*%x)))
-#     
-#   }
-#   return(yhat)
-# }
