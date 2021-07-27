@@ -16,7 +16,7 @@ dsMTL currently includes three supervised and one unsupervised federated multi-t
 | `dsMTL_iNMF`  | MTL | Matrix factorization | Factorize matrices into shared and specific components |
 
 ## Server-side package
-The server side package dsMTLBase can be found [here](https://github.com/transbioZI/dsMTLBase)
+The server side package can be found: [dsMTLBase](https://github.com/transbioZI/dsMTLBase)
 
 ## Installation
 
@@ -28,4 +28,4 @@ install_github("transbioZI/dsMTLClient")
 
 
 ## Test dsMTL functions
-
+The installation tutorial can be found in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase)
