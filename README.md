@@ -5,7 +5,6 @@ dsMTL (Federated Multi-Task Learning based on DataSHIELD) provided federated, pr
 <img src="inst/overview.png" style="width: 70%; height: 70%"/>​
 </p>
 
-
 dsMTL currently includes three supervised and one unsupervised federated multi-task learning as well as one federated machine learning algorithms. Each algorithm captured a specific form of cross-cohort heterogeneity, which was linked to different applications in molecular studies.
 
 | Name  | Type | Task | Effect |
@@ -15,3 +14,18 @@ dsMTL currently includes three supervised and one unsupervised federated multi-t
 | `dsMTL_trace`  | MTL | Classification/Regression | Identify models represented in low-dimentional spcae |
 | `dsMTL_net`  | MTL | Classification/Regression | Incorporate task-relatedness described as a graph |
 | `dsMTL_iNMF`  | MTL | Matrix factorization | Factorize matrices into shared and specific components |
+
+## Server-side package
+The server side package dsMTLBase can be found [here](https://github.com/transbioZI/dsMTLBase)
+
+## Installation
+
+```r
+install.packages("devtools")
+library("devtools")
+install_github("transbioZI/dsMTLClient")
+```
+
+
+## Test dsMTL functions
+
