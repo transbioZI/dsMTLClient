@@ -48,7 +48,7 @@ datashield.symbols(datasources)
 ##########################
 #create and upload regression data
 ##########################
-n=60; p=50; sp=0.7; type="regress"
+n=100; p=60; sp=0.7; type="regress"
 data=createDataset(n, p, sp, type)
 XX=list(data$x[1:30, ], data$x[31:60, ]); YY=list(data$y[1:30, , drop=F], data$y[31:60, , drop=F]); 
 X="X"; Y="Y"
