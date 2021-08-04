@@ -18,7 +18,7 @@ createDataset=function(n, p, sp, type){
   y=xx %*% w
   y=(y-mean(y))/sd(y)
   if(type=="regress"){
-    yy <- y + stats::rnorm(n, sd = 1, mean = 0)
+    yy <- y + stats::rnorm(n, sd = 0.5, mean = 0)
   } else if (type=="classify"){
     yy <- sign(y + stats::rnorm(n, sd = 0.5, mean = 0))
   }
@@ -32,8 +32,10 @@ createDataset=function(n, p, sp, type){
 #login data
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = "http://192.168.56.100:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
-builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s1", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
@@ -50,7 +52,8 @@ datashield.symbols(datasources)
 ##########################
 n=100; p=60; sp=0.7; type="regress"
 data=createDataset(n, p, sp, type)
-XX=list(data$x[1:30, ], data$x[31:60, ]); YY=list(data$y[1:30, , drop=F], data$y[31:60, , drop=F]); 
+XX=list(data$x[1:50, ], data$x[51:100, ]); 
+YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
 X="X"; Y="Y"
 
 serverKey1=list(server=datasources[1], key="mannheim2022")
@@ -85,26 +88,34 @@ plot(m1$w, m2$w, xlab="lasso model", ylab="elastic model")
 #Tests for algorithm training
 ##########################
 #use case 1: lambda sequence was estimated from data
-fit1=ds.Lasso_Train(X=X, Y=Y, type="regress", nlambda=5, lam_ratio=0.5, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit1=ds.Lasso_Train(X=X, Y=Y, type="regress", nlambda=5, lam_ratio=0.5, C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
 #regularization tree
 matplot(t(fit1$ws), type = "l", main="solution Path", xlab = "lambda", ylab = "coefficients")
 #use case 2: use a given lambda
-fit2=ds.Lasso_Train(X=X, Y=Y, type="regress", nlambda=5, lambda=0.05, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit2=ds.Lasso_Train(X=X, Y=Y, type="regress", nlambda=5, lambda=0.05, C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
+plot(fit2$ws, xlab="index of coefficients", ylab="values")
 #use case 3:lambda sequence was inputted from users
-fit3=ds.Lasso_Train(X=X, Y=Y, type="regress", lambda=c(1,0.5,0.05), C=0, opts=opts, datasources=datasources, nDigits=4)
+fit3=ds.Lasso_Train(X=X, Y=Y, type="regress", lambda=c(1,0.5,0.05), C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
 #regularization tree
 matplot(t(fit3$ws), type = "l", main="solution Path", xlab = "lambda", ylab = "coefficients")
 
 ##########################
 #Tests for cross-validation procedure
 ##########################
-cvResult=ds.Lasso_CVInSite(X=X, Y=Y, type="regress", lam_ratio=0.5, nlambda=5, opts=opts, C=0, datasources=datasources, nDigits=4, nfolds=5)
-boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+cvResult=ds.Lasso_CVInSite(X=X, Y=Y, type="regress", lam_ratio=0.5, nlambda=5, opts=opts, 
+                           C=0, datasources=datasources, 
+                           nDigits=4, nfolds=5)
+boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="mean squared error")
 #training with selected hype-parameter
-fit=ds.Lasso_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, opts=opts, C=0, datasources=datasources, nDigits=4)
+fit=ds.Lasso_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, 
+                   opts=opts, C=0, datasources=datasources, nDigits=4)
 #coefficients
-str(fit$ws)
+plot(fit$ws, xlab="index of coefficients", ylab="values")
 ##################################################################################################################
 
 
@@ -118,9 +129,10 @@ str(fit$ws)
 ##########################
 #create data
 ##########################
-n=60; p=50; sp=0.7; type="classify"
+n=100; p=60; sp=0.7; type="classify"
 data=createDataset(n, p, sp, type)
-XX=list(data$x[1:30, ], data$x[31:60, ]); YY=list(data$y[1:30, , drop=F], data$y[31:60, , drop=F]); 
+XX=list(data$x[1:50, ], data$x[51:100, ]); 
+YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
 X="X"; Y="Y"
 
 serverKey1=list(server=datasources[1], key="mannheim2022")
@@ -155,27 +167,68 @@ plot(m1$w, m2$w, xlab="lasso model", ylab="elastic model")
 #Tests for algorithm training
 ##########################
 #use case 1: lambda sequence was estimated from data
-fit1=ds.Lasso_Train(X=X, Y=Y, type="classify", nlambda=5, lam_ratio=0.5, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit1=ds.Lasso_Train(X=X, Y=Y, type="classify", nlambda=5, lam_ratio=0.5, C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
 #regularization tree
 matplot(t(fit1$ws), type = "l", main="solution Path", xlab = "lambda", ylab = "coefficients")
 #use case 2: use a given lambda
-fit2=ds.Lasso_Train(X=X, Y=Y, type="classify", nlambda=5, lambda=0.1, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit2=ds.Lasso_Train(X=X, Y=Y, type="classify", nlambda=5, lambda=0.1, C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
+#plot the models
+plot(fit2$ws, ylab="values")
 #use case 3: lambda sequence was inputted from users
-fit3=ds.Lasso_Train(X=X, Y=Y, type="classify", lambda=c(1,0.5,0.1), C=0, opts=opts, datasources=datasources, nDigits=4)
-#regularization tree
+fit3=ds.Lasso_Train(X=X, Y=Y, type="classify", lambda=c(1,0.5,0.1), C=0, opts=opts, 
+                    datasources=datasources, nDigits=4)
+#plot regularization tree
 matplot(t(fit3$ws), type = "l", main="solution Path", xlab = "lambda", ylab = "coefficients")
 
 ##########################
 #Tests for In-site cross-validation procedure
 ##########################
-cvResult=ds.Lasso_CVInSite(X=X, Y=Y, type="classify", lam_ratio=0.5, nlambda=5, opts=opts, C=0, datasources=datasources, nDigits=4, 
+cvResult=ds.Lasso_CVInSite(X=X, Y=Y, type="classify", lam_ratio=0.5, nlambda=5, opts=opts, 
+                           C=0, datasources=datasources, nDigits=4, 
                            nfolds=5)
-boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+#plot CV results
+boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="missing classification rate")
-fit=ds.Lasso_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, opts=opts, C=0, nlambda = 5, datasources=datasources, nDigits=4)
+fit=ds.Lasso_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, opts=opts, 
+                   C=0, nlambda = 5, datasources=datasources, nDigits=4)
 #coefficients
 str(fit$ws)
 ##################################################################################################################
 
 DSI::datashield.logout(datasources)
+
+
+
+
+n=100; p=60; sp=0.7; type="regress"
+data=createDataset(n, p, sp, type)
+XX=list(data$x[1:50, ], data$x[51:100, ]); YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_R_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_R_Y.rda")
+
+n=100; p=60; sp=0.7; type="classify"
+data=createDataset(n, p, sp, type)
+XX=list(data$x[1:50, ], data$x[51:100, ]); YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_C_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_C_Y.rda")
+
+
+
+
+
+
+
 

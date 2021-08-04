@@ -46,8 +46,10 @@ createDataset=function(ns, p, inteCor, type){
 #login data
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = "http://192.168.56.100:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
-builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s1", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
 datashield.symbols(datasources)
@@ -64,7 +66,7 @@ datashield.symbols(datasources)
 ##########################
 #create and upload data
 ##########################
-data=createDataset(ns=c(30,30), p=50, inteCor=0.7, type="regress")
+data=createDataset(ns=c(50,50), p=60, inteCor=0.7, type="regress")
 XX=data$X; YY=data$Y
 X="X"; Y="Y"; G=matrix(c(1,-1), 2,1)
 
@@ -94,15 +96,18 @@ plot(m1$Obj, ylab="objective values", xlab="iteration")
 #Tests for training procedure
 ##########################
 #use case 1:lambda sequence was estimated from data
-fit1=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="regress", nlambda=5, lam_ratio=0.1, C=1, opts=opts, datasources=datasources, nDigits=4)
-#correlation of models across cohorts over the lambdas
+fit1=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="regress", nlambda=5, lam_ratio=0.1, C=1, 
+                      opts=opts, datasources=datasources, nDigits=4)
+#show correlation of models across cohorts over the lambda sequence
 sapply(fit1$ws, function(x)cor(x)[2])
 #use case 2: use a given lambda
-fit2=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="regress", lambda=0.1, nlambda=5, C=1, opts=opts, datasources=datasources, nDigits=4)
+fit2=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="regress", lambda=0.1, nlambda=5, C=1, 
+                      opts=opts, datasources=datasources, nDigits=4)
 #correlation between models
 cor(fit2$ws[[1]])
 #use case 3: lambda sequence was inputted from users
-fit3=ds.MTL_Net_Train(X=X, Y=Y, type="regress", lambda=c(1,0.1,0.01), C=1, G=G, opts=opts, datasources=datasources, nDigits=4)
+fit3=ds.MTL_Net_Train(X=X, Y=Y, type="regress", lambda=c(1,0.1,0.01), C=1, G=G, 
+                      opts=opts, datasources=datasources, nDigits=4)
 #correlation of models across cohorts along the lambda sequence
 sapply(fit3$ws, function(x)cor(x)[2])
 ##########################
@@ -110,10 +115,15 @@ sapply(fit3$ws, function(x)cor(x)[2])
 ##########################
 #Tests for cross-validation 
 ##########################
-cvResult=ds.MTL_Net_CVInSite(X=X, Y=Y, type="regress", nfolds = 5, lam_ratio=0.1, nlambda=5, opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
-boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+cvResult=ds.MTL_Net_CVInSite(X=X, Y=Y, type="regress", nfolds = 5, lam_ratio=0.1, 
+                             nlambda=5, opts=opts, C=1, G=G, datasources=datasources, 
+                             nDigits=4)
+#plot the cv result
+boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="mean squared error")
-fit=ds.MTL_Net_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
+fit=ds.MTL_Net_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, 
+                     opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
 #show correlation of models across cohorts 
 cor(fit$ws[[1]])
 ##########################
@@ -133,7 +143,7 @@ cor(fit$ws[[1]])
 ##########################
 #create and upload data
 ##########################
-data=createDataset(ns=c(30,30), p=50, inteCor=0.7, type="classify")
+data=createDataset(ns=c(50,50), p=60, inteCor=0.7, type="classify")
 XX=data$X; YY=data$Y
 X="X"; Y="Y"; G=matrix(c(1,-1), 2,1)
 
@@ -163,14 +173,17 @@ plot(m1$Obj, ylab="objective values", xlab="iteration")
 #Tests for training procedure
 ##########################
 #use case 1:lambda sequence was estimated from data
-fit1=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="classify", nlambda=5, lam_ratio=0.1, C=1, opts=opts, datasources=datasources, nDigits=4)
+fit1=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="classify", nlambda=5, lam_ratio=0.1, C=1, 
+                      opts=opts, datasources=datasources, nDigits=4)
 #correlation of models across cohorts along the lambda sequence
 sapply(fit1$ws, function(x)cor(x)[2])
 #use case 2: use a given lambda
-fit2=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="classify", lambda=0.1, nlambda=5, C=1, opts=opts, datasources=datasources, nDigits=4)
+fit2=ds.MTL_Net_Train(X=X, Y=Y, G=G, type="classify", lambda=0.1, nlambda=5, C=1, 
+                      opts=opts, datasources=datasources, nDigits=4)
 cor(fit2$ws[[1]])
 #use case 3: lambda sequence was inputted from users
-fit3=ds.MTL_Net_Train(X=X, Y=Y, type="classify", lambda=c(1,0.1,0.01), C=1, G=G, opts=opts, datasources=datasources, nDigits=4)
+fit3=ds.MTL_Net_Train(X=X, Y=Y, type="classify", lambda=c(1,0.1,0.01), C=1, G=G, 
+                      opts=opts, datasources=datasources, nDigits=4)
 #show the correlation of models across cohorts along the lambda sequence
 sapply(fit3$ws, function(x)cor(x)[2])
 ##########################
@@ -178,11 +191,14 @@ sapply(fit3$ws, function(x)cor(x)[2])
 ##########################
 #Tests for cross-validation 
 ##########################
-cvResult=ds.MTL_Net_CVInSite(X=X, Y=Y, type="classify", nfolds=5, lam_ratio=0.01, nlambda=5, opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
+cvResult=ds.MTL_Net_CVInSite(X=X, Y=Y, type="classify", nfolds=5, lam_ratio=0.01, 
+                             nlambda=5, opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
 #plot the result of CV
-boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="missing classification rate")
-fit=ds.MTL_Net_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, nlambda=5, opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
+fit=ds.MTL_Net_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, nlambda=5, 
+                     opts=opts, C=1, G=G, datasources=datasources, nDigits=4)
 #show correlation of models across cohorts 
 cor(fit$ws[[1]])
 ##########################
@@ -190,3 +206,28 @@ cor(fit$ws[[1]])
 ##################################################################################################################
 
 DSI::datashield.logout(datasources)
+
+
+
+data=createDataset(ns=c(50,50), p=60, inteCor=0.7, type="regress")
+XX=data$X; YY=data$Y
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Net_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Net_R_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Net_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Net_R_Y.rda")
+
+data=createDataset(ns=c(50,50), p=60, inteCor=0.7, type="classify")
+XX=data$X; YY=data$Y
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Net_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Net_C_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Net_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Net_C_Y.rda")
+
+
+

@@ -26,8 +26,10 @@ simulateData2= function(){
 #login data
 #################################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="study1", url = "http://192.168.56.100:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
-builder$append(server="study2", url = "http://192.168.56.101:8080/",  user = "administrator", password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="study1", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="study2", url = "http://192.168.56.101:8080/",  user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
@@ -80,12 +82,24 @@ plot(mm.dist$objList, ylab="objective values", xlab="iteration")
 mm = ds.MTL_iNMF_Train(datasources = datasources, Xs = "X", rank = 1, n_initializations = 3, Sp = 0.01, lam = 10, opts=solveOpt)
 #plot the raw matrices and the identified shared component
 par(mfrow=c(1,3))
-image(t(apply(XX[[1]], 2, rev)))
-image(t(apply(XX[[2]], 2, rev)))
+image(t(apply(XX[[1]], 2, rev)), xlab="raw data matrix 1")
+image(t(apply(XX[[2]], 2, rev)), xlab="raw data matrix 2")
 image(t(apply(do.call(cbind, mm$H_all), 2, rev)), xlab="3 initializations", ylab="shared component")
 #################################################################################################################################
 
 DSI::datashield.logout(datasources)
+
+
+XX=simulateData2()
+X=XX[[1]]
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_iNMF_X.rda")
+
+X=XX[[2]]
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_iNMF_X.rda")
+
+
+
+
 
 
 

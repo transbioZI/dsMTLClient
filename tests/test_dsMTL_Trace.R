@@ -43,8 +43,10 @@ createDataset=function(ns, p, nRank, type){
 #login data
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = "http://192.168.56.100:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
-builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s1", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", 
+               password = "datashield_test&", driver = "OpalDriver")
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
 datashield.symbols(datasources)
@@ -64,7 +66,7 @@ datashield.symbols(datasources)
 ##########################
 #create and upload data
 ##########################
-data=createDataset(ns=c(30,30), p=50, nRank=1, type="regress")
+data=createDataset(ns=c(50,50), p=60, nRank=1, type="regress")
 XX=data$X; YY=data$Y
 X="X"; Y="Y"
 
@@ -101,30 +103,38 @@ corpcor::fast.svd(m2$W)$d
 #Tests for algorithm training 
 ##########################
 #use case 1:lambda sequence was estimated from data
-fit1=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", nlambda=5, lam_ratio=0.1, C=0, opts=opts, datasources=datasources, nDigits=4)
-#plot the rank of coefficient matrix
-plot(sapply(fit1$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", ylab="ranks")
+fit1=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", nlambda=5, lam_ratio=0.1, C=0, 
+                        opts=opts, datasources=datasources, nDigits=4)
+#plot the rank of W along the lambda sequence
+plot(sapply(fit1$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", 
+     ylab="ranks")
 #use case 2: use a given lambda
-fit2=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=0.1, nlambda=5, C=0, opts=opts, datasources=datasources, nDigits=4)
-#correlation between two models
+fit2=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=0.1, nlambda=5, C=0, opts=opts, 
+                        datasources=datasources, nDigits=4)
+#show the correlation between two models
 cor(fit2$ws[[1]])
 #use case 3: lambda sequence was inputted from users
-fit3=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=c(1,0.1,0.01), C=0, opts=opts, datasources=datasources, nDigits=4)
+fit3=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=c(1,0.1,0.01), C=0, opts=opts, 
+                        datasources=datasources, nDigits=4)
 #plot the rank of coefficient matrix
-plot(sapply(fit3$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", ylab="ranks")
+plot(sapply(fit3$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", 
+     ylab="ranks")
 ##########################
 
 ##########################
 #Tests for cross-validation procedure
 ##########################
-cvResult=ds.MTL_Trace_CVInSite(X=X, Y=Y, type="regress", lam_ratio=0.1, nlambda=5, nfolds=5, opts=opts, C=0, datasources=datasources, nDigits=4)
+cvResult=ds.MTL_Trace_CVInSite(X=X, Y=Y, type="regress", lam_ratio=0.1, nlambda=5, 
+                               nfolds=5, opts=opts, C=0, datasources=datasources, nDigits=4)
 #plot the result of cross-validation
-boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+boxplot(cvResult$mse_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="mean squared error")
-fit=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, opts=opts, C=0, datasources=datasources, nDigits=4)
-#singular values
+fit=ds.MTL_Trace_Train(X=X, Y=Y, type="regress", lambda=cvResult$lambda.min, nlambda=5, 
+                       opts=opts, C=0, datasources=datasources, nDigits=4)
+#show singular values
 corpcor::fast.svd(fit$ws[[1]])$d
-#model's correlation between cohorts
+#show correlation between models
 cor(fit$ws[[1]])
 ##########################
 
@@ -145,7 +155,7 @@ cor(fit$ws[[1]])
 ##########################
 #create and upload data
 ##########################
-data=createDataset(ns=c(30,30), p=50, nRank=1, type="classify")
+data=createDataset(ns=c(50,50), p=60, nRank=1, type="classify")
 XX=data$X; YY=data$Y; X="X"; Y="Y"
 
 serverKey1=list(server=datasources[1], key="mannheim2022")
@@ -180,33 +190,64 @@ corpcor::fast.svd(m2$W)$d
 #Tests for training procedure
 ##########################
 #use case 1:lambda sequence was estimated from data
-fit1=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", nlambda=5, lam_ratio=0.1, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit1=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", nlambda=5, lam_ratio=0.1, C=0, 
+                        opts=opts, datasources=datasources, nDigits=4)
 #plot the rank of coefficient matrix over lambda
-plot(sapply(fit1$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", ylab="ranks")
+plot(sapply(fit1$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", 
+     ylab="ranks")
 #use case 2: use a given lambda
-fit2=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=0.1, nlambda=5, C=0, opts=opts, datasources=datasources, nDigits=4)
+fit2=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=0.1, nlambda=5, C=0, opts=opts, 
+                        datasources=datasources, nDigits=4)
 #correlation between models
 cor(fit2$ws[[1]])
 #use case 3: lambda sequence was inputted from users
-fit3=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=c(1,0.1,0.01), C=0, opts=opts, datasources=datasources, nDigits=4)
+fit3=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=c(1,0.1,0.01), C=0, opts=opts, 
+                        datasources=datasources, nDigits=4)
 #plot the rank of coefficient matrix
-plot(sapply(fit3$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", ylab="ranks")
+plot(sapply(fit3$ws, function(x)length(corpcor::fast.svd(x)$d)), xlab="lambda sequence", 
+     ylab="ranks")
 ##########################
 
 ##########################
 #Tests for cross-validation 
 ##########################
-cvResult=ds.MTL_Trace_CVInSite(X=X, Y=Y, type="classify", lam_ratio=0.1, nlambda=5, nfolds=5, opts=opts, C=0, datasources=datasources, nDigits=4)
+cvResult=ds.MTL_Trace_CVInSite(X=X, Y=Y, type="classify", lam_ratio=0.1, nlambda=5, 
+                               nfolds=5, opts=opts, C=0, datasources=datasources, nDigits=4)
 #plot the result of CV
-boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), xlab="averaged lambda over folds", 
+boxplot(cvResult$mcr_fold, names=as.character(round(colMeans(cvResult$lam_seq), 3)), 
+        xlab="averaged lambda over folds", 
         ylab="missing classification rate")
-fit=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, nlambda=5, opts=opts, C=0, datasources=datasources, nDigits=4)
-#singular values
+fit=ds.MTL_Trace_Train(X=X, Y=Y, type="classify", lambda=cvResult$lambda.min, nlambda=5, 
+                       opts=opts, C=0, datasources=datasources, nDigits=4)
+#show singular values
 corpcor::fast.svd(fit$ws[[1]])$d
-#model's correlation between cohorts
+#show correlation between models
 cor(fit$ws[[1]])
 ##########################
 
 ##################################################################################################################
 
 DSI::datashield.logout(datasources)
+
+
+data=createDataset(ns=c(50,50), p=60, nRank=1, type="regress")
+XX=data$X; YY=data$Y
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_R_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_R_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_R_Y.rda")
+
+data=createDataset(ns=c(50,50), p=60, nRank=1, type="classify")
+XX=data$X; YY=data$Y
+X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_C_Y.rda")
+
+X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
+save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_C_X.rda")
+save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_C_Y.rda")
+
+
