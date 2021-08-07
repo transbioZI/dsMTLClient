@@ -35,12 +35,12 @@ install_github("transbioZI/dsMTLClient")
 
 dsMTL server-side package has been pre-installed in the [opal demo server](https://opal-demo.obiba.org/). Thus the most convenient way to test dsMTL functions is using opal demo server as the back end. If you want to use dsMTL in real applications, please follow the tutorial to install dsMTL server-side package on your server. The simulation datasets based on two-server scenario were provided. For each algorithm, we provided codes for testing the optimization solvers with different opinions, multiple training procedures of the model as well as the cross-validatin.
 
-### Run dsMTL using opal demo server
+### Run using opal demo server
 
 The testing files were [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo). Please download the file for each algorithm and run line by line.
 
 
-### Run dsMTL using own servers
+### Run using own servers
 1. Install two DataSHIELD servers and dsMTL server-side package. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
 2.  Upload and import [simulation datasets](https://github.com/transbioZI/dsMTLClient/tree/main/inst/simuData/opal-demo) in your servers. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
 3.  Download and run the testing files [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo/). 
