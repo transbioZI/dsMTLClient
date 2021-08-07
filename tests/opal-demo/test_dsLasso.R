@@ -12,14 +12,19 @@ library(dsMTLClient)
 #login data
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = 'https://opal-demo.obiba.org', user = 'administrator',
-               password = 'password', driver = "OpalDriver")
-builder$append(server="s2", url = 'https://opal-demo.obiba.org', user = 'administrator',
-               password = 'password', driver = "OpalDriver")
+builder$append(server="s1", url = 'https://opal-demo.obiba.org', user = 'dsuser',
+               password = 'password', driver = "OpalDriver", profile="mtl")
+builder$append(server="s2", url = 'https://opal-demo.obiba.org', user = 'dsuser',
+               password = 'password', driver = "OpalDriver", profile="mtl")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
 datashield.symbols(datasources)
+##################################################################################################################
+
+
+
+
 
 
 
@@ -106,22 +111,18 @@ plot(fit$ws, xlab="index of coefficients", ylab="values")
 ##################################################################################################################
 
 ##########################
-#create data
+#load data
 ##########################
-n=100; p=60; sp=0.7; type="classify"
-data=createDataset(n, p, sp, type)
-XX=list(data$x[1:50, ], data$x[51:100, ]); 
-YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
-X="X"; Y="Y"
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsMTL_Server1.dsLasso_C_X")
+datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsMTL_Server1.dsLasso_C_Y")
+datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-serverKey1=list(server=datasources[1], key="mannheim2022")
-serverKey2=list(server=datasources[2], key="mannheim2022")
-ds.setMyServerData(serverKey1, data=XX[[1]], symbol="X")
-ds.setMyServerData(serverKey1, data=YY[[1]], symbol="Y")
-ds.setMyServerData(serverKey2, data=XX[[2]], symbol="X")
-ds.setMyServerData(serverKey2, data=YY[[2]], symbol="Y")
-str(ds.getMyServerData(serverKey1, "Y"))
-str(ds.getMyServerData(serverKey2, "Y"))
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsMTL_Server2.dsLasso_C_X")
+datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsMTL_Server2.dsLasso_C_Y")
+datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
+X="X"; Y="Y"
 
 opts=list();opts$init=0; opts$maxIter=10; opts$tol=0.01; opts$ter=2;
 
@@ -178,33 +179,6 @@ str(fit$ws)
 ##################################################################################################################
 
 DSI::datashield.logout(datasources)
-
-
-
-
-n=100; p=60; sp=0.7; type="regress"
-data=createDataset(n, p, sp, type)
-XX=list(data$x[1:50, ], data$x[51:100, ]); YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
-X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_R_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_R_Y.rda")
-
-X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_R_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_R_Y.rda")
-
-n=100; p=60; sp=0.7; type="classify"
-data=createDataset(n, p, sp, type)
-XX=list(data$x[1:50, ], data$x[51:100, ]); YY=list(data$y[1:50, , drop=F], data$y[51:100, , drop=F]); 
-X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_C_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsLasso_C_Y.rda")
-
-X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_C_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsLasso_C_Y.rda")
-
-
 
 
 

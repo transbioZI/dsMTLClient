@@ -224,7 +224,7 @@ ds.MTL_iNMF_Train = function(datasources, Xs, rank, myServerKey=NULL, n_initiali
     }
   }  
   
-  return(list(H_all = H_all, Hvs_all = Hvs_all, Ws_all=Ws_all, iter_to_conv = iter_to_conv, objList = objList, resList=resList,
+  return(list(H_all = H_all, Vs_all = Hvs_all, Ws_all=Ws_all, iter_to_conv = iter_to_conv, objList = objList, resList=resList,
               inconsExp =inconsExp, numNetAccess=numNetAccess))
   
 }
