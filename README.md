@@ -56,7 +56,7 @@ Han Cao (hank9cao@gmail.com)
 
 
 ## Useful links
-1. dsMTLClient - federated, privacy-preserving machine-learning and multi-task learning analysis: https://github.com/transbioZI/dsMTLClient
+1. dsMTLBase - federated, privacy-preserving machine-learning and multi-task learning analysis: https://github.com/transbioZI/dsMTLBase
 2. Documents of opal servers: https://opaldoc.obiba.org/en/latest/index.html
 3. Tutorial of DataSHIELD for beginers: https://data2knowledge.atlassian.net/wiki/spaces/DSDEV/pages/12943395/Beginners+Hub
 4. Forum of DataSHIELD: https://datashield.discourse.group/
