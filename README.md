@@ -17,8 +17,10 @@ dsMTL currently includes three supervised and one unsupervised federated multi-t
 | `dsMTL_net`  | MTL | Classification/Regression | Incorporate task-relatedness described as a graph |
 | `dsMTL_iNMF`  | MTL | Matrix factorization | Factorize matrices into shared and specific components |
 
+
 ## Server-side package
 The server side package can be found: [dsMTLBase](https://github.com/transbioZI/dsMTLBase)
+
 
 ## Installation
 
@@ -29,16 +31,16 @@ install_github("transbioZI/dsMTLClient")
 ```
 
 
-## Test dsMTL functions
+## Run dsMTL functions
 
 dsMTL server-side package has been pre-installed in the [opal demo server](https://opal-demo.obiba.org/). Thus the most convenient way to test dsMTL functions is using opal demo server as the back end. If you want to use dsMTL in real applications, please follow the tutorial to install dsMTL server-side package on your server. The simulation datasets based on two-server scenario were provided. For each algorithm, we provided codes for testing the optimization solvers with different opinions, multiple training procedures of the model as well as the cross-validatin.
 
-### Test dsMTL using opal demo server
+#### Run dsMTL using opal demo server
 
 The testing files were [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo). Please download the file for each algorithm and run line by line.
 
 
-### Test dsMTL using own servers
+#### Run dsMTL using own servers
 1. Install two DataSHIELD servers and dsMTL server-side package. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
 2.  Upload and import [simulation datasets](https://github.com/transbioZI/dsMTLClient/tree/main/inst/simuData/opal-demo) in your servers. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
 3.  Download and run the testing files [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo/). 
@@ -47,13 +49,13 @@ The testing files were [here](https://github.com/transbioZI/dsMTLClient/tree/mai
 
 
 
-# Contact
+## Contact
 
 Han Cao (hank9cao@gmail.com)
 
 
 
-# Useful links
+## Useful links
 1. dsMTLClient - federated, privacy-preserving machine-learning and multi-task learning analysis: https://github.com/transbioZI/dsMTLClient
 2. Documents of opal servers: https://opaldoc.obiba.org/en/latest/index.html
 3. Tutorial of DataSHIELD for beginers: https://data2knowledge.atlassian.net/wiki/spaces/DSDEV/pages/12943395/Beginners+Hub
