@@ -35,6 +35,9 @@ dsMTL server-side package has been pre-installed in the [opal demo server](https
 
 ### Test dsMTL using opal demo server
 
+The testing files were [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo). Please download the file for each algorithm and run line by line.
+
+
 ### Test dsMTL using own servers
 1. Install two DataSHIELD servers and dsMTL server-side package. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
 2.  Upload and import [simulation datasets](https://github.com/transbioZI/dsMTLClient/tree/main/inst/simuData/opal-demo) in your servers. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
