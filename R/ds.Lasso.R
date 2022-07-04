@@ -24,7 +24,7 @@
 ################################################################################
 
 
-#Modification by Augusto Anguita-Ruiz
+#Modification by Augusto Anguita-Ruiz.
 #Version: 23.06.2022
 #Detail: Including the possibility of including adjusting covariates in the models
 
