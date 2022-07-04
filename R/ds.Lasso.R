@@ -24,7 +24,9 @@
 ################################################################################
 
 
-#Modificacion.
+#Modification by Augusto Anguita-Ruiz
+#Version: 23.06.2022
+#Detail: Including the possibility of including adjusting covariates in the models
 
 
 ################################################################################
@@ -44,7 +46,7 @@
 #' @export  
 #' @author Han Cao
 ################################################################################
-ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
+ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   #' @title Proximal operator for L1
   #' @keywords internal
   #' @param W The current estimate of W 
@@ -72,6 +74,19 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
   nSubs=sapply(dims, function(x)x[1])
   nFeats=dims[[1]][2]
   nTasks= length(dims)
+    
+  #----------changes
+  if (!is.null(covar)) { 
+  if (any(covar > nFeats) | any(covar < 1)) { 
+  print("Error: Covariate index out of the dimensions of the input.") 
+  break;
+  }
+  }
+  penfactor <- rep(1,nFeats)
+  penfactor[covar] <- 0
+  penfactor=penfactor/sum(penfactor)*nFeats
+  lam=lam*penfactor
+#----------
   
   #initialize a starting point
   if(opts$init==0){
@@ -173,7 +188,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 #' @export  
 #' @author Han Cao
 ################################################################################
-ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
+ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   proximal_l1 <- function (W, lambda ){
     p <- abs(W) - lambda
     p=p*(p>0)
@@ -193,7 +208,19 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
   nFeats=dims[[1]][2]
   nTasks= length(dims)
   
-  
+  #----------changes
+  if (!is.null(covar)) { 
+  if (any(covar > nFeats) | any(covar < 1)) { 
+  print("Error: Covariate index out of the dimensions of the input.") 
+  break;
+  }
+  }
+  penfactor <- rep(1,nFeats)
+  penfactor[covar] <- 0
+  penfactor=penfactor/sum(penfactor)*nFeats
+  lam=lam*penfactor
+  #----------
+
   #initialize a starting point
   if(opts$init==0){
     w0=rep(0,nFeats)
@@ -305,6 +332,34 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
     X=Xnew
   }
+  
+  
+  #----------changes
+  penfactor <- rep(1,ncol(X))
+  penfactor[covar] <- 0
+  penfactor=penfactor/sum(penfactor)*ncol(X)
+  
+  if (!is.null(covar)) { 
+    if (any(covar > ncol(X)) | any(covar < 1)) { 
+      print("Error: Covariate index out of the dimensions of the input.") 
+      break;
+    }
+	#crear funcion para minimos cuadrados. o lanzar modelo de regresion y hacer metanalisis
+    betaCov=solve(t(X[, covar]) %*% X[, covar]) %*% t(X[, covar]) %*% Y
+    
+    #initialize final result
+    fit=list();fit$ws=vector();fit$Logs=vector();fit$Obj=vector();fit$gamma=vector();fit$type=type
+    dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
+    nFeats=dims[[1]][2]
+    nSubs=sapply(dims,function(x)x[1])
+    xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
+    xys=rowSums(do.call(cbind, xys))/sum(nSubs)
+    
+    xys=abs(t(X)%*%Y - t(X)%*%X[, covar]%*%betaCov)/nrow(X)/penfactor
+    max_xy_norm=max(xys[setdiff(seq(ncol(X)),covar)])
+    
+  }
+  #----------
   
   #initialize final result
   fit=list();fit$ws=vector();fit$Logs=vector();fit$Obj=vector();fit$gamma=vector();fit$type=type
