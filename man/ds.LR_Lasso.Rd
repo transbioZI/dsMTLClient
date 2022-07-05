@@ -4,7 +4,7 @@
 \alias{ds.LR_Lasso}
 \title{Solver of logistic regression with Lasso}
 \usage{
-ds.LR_Lasso(X, Y, lam, C, opts, datasources, nDigits)
+ds.LR_Lasso(X, Y, lam, C, covar = NULL, opts, datasources, nDigits)
 }
 \arguments{
 \item{X}{The design matrices of multiple cohorts}
