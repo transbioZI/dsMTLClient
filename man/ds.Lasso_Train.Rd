@@ -12,6 +12,7 @@ ds.Lasso_Train(
   lam_ratio = 0.01,
   lambda = NULL,
   C = 0,
+  covar = NULL,
   opts = list(init = 0, maxIter = 20, tol = 0.01, ter = 2),
   datasources = NULL,
   nDigits = 10,
