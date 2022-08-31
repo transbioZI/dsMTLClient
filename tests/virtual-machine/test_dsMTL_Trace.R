@@ -43,10 +43,10 @@ createDataset=function(ns, p, nRank, type){
 #login data
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = "http://192.168.56.101:8080/", user = "administrator", 
-               password = "datashield_test&", driver = "OpalDriver")
-builder$append(server="s2", url = "http://192.168.56.101:8080/", user = "administrator", 
-               password = "datashield_test&", driver = "OpalDriver")
+builder$append(server="s1", url = "https://192.168.56.100:8443/", user = "administrator",
+               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+builder$append(server="s2", url = "https://192.168.56.100:8443/", user = "administrator",
+               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
 datashield.symbols(datasources)

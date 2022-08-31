@@ -11,9 +11,9 @@ library(dsMTLClient)
 ##################################################################################################################
 builder <- DSI::newDSLoginBuilder()
 builder$append(server="s1", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'password', driver = "OpalDriver", profile="mtl")
+               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
 builder$append(server="s2", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'password', driver = "OpalDriver", profile="mtl")
+               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)

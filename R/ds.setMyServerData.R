@@ -40,6 +40,7 @@
 #' serverDataKey.myKey(project: serverDataKey; table: myKey) where the dataset was created normaly using DataSHIELD. The remote ropy
 #' of the key was hand over to the trustworthy analyst. This was determined by the server administrator 
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
