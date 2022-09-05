@@ -23,9 +23,16 @@ Authors@R:
              role="ths",
              email="emanuel.schwarz@zi-mannheim.de"))
 Maintainer: Han Cao <hank9cao@gmail.com>
-Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD dsBase
-Depends: R (>= 4.0.5), DSI (>= 1.2.0), DSOpal (>= 1.2.0), corpcor, stats
+Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD dsBase.
+Depends:
+    R (>= 4.1.0),
+    DSI (>= 1.4.0)
+Imports:
+    corpcor,
+    opalr,
+    readr,
+    stats
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1

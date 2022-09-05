@@ -41,6 +41,7 @@
 #' @return The converged result of optimization
 #' @details Solver of Lasso regression
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
