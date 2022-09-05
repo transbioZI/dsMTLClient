@@ -4,7 +4,7 @@
 \alias{ds.LS_Lasso}
 \title{Solver of Lasso regression}
 \usage{
-ds.LS_Lasso(X, Y, lam, C, covar = NULL, opts, datasources, nDigits)
+ds.LS_Lasso(X, Y, lam, C, opts, datasources, nDigits)
 }
 \arguments{
 \item{X}{The design matrices of multiple cohorts}
