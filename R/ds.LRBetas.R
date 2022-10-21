@@ -31,9 +31,9 @@
 
 ################################################################################
 #' @title Fit a linear model on selected covariates
-#' @description Fit a linear regression model with only selected adjusting covariates
+#' @description Fit a linear logistic regression model with only selected adjusting covariates
 #' @param X Predictors
-#' @param Y Outcome
+#' @param Y Binary-Outcome
 #' @param covar Positions corresponding to adjusting covariates in the X dataset
 
 #' @return Estimated beta coefficients for covariates
@@ -43,14 +43,14 @@
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
-ds.lmBetas= function(X,Y,covar){
-#browser()
+ds.LRBetas= function(X,Y,covar){
+
   ds.make(toAssign = "X-X+1",newobj = "ONES",datasources = conns) #Create a vector of ones in the server side
-  ds.dataFrameSubset(df.name = 'X',  V1.name = "ONES",  V2.name = "ONES",  Boolean.operator = "==",keep.cols = covar, newobj = 'X_lm',  datasources = conns) #Subset only columns corresponding to covariates from the X dataset
-  ds.asNumeric(x.name = 'Y', newobj = 'Y_lm', datasources = NULL) #Coerce outcome to numeric in the server side
-  ds.cbind(x = c("Y_lm", "X_lm"), newobj = "data_lm",datasources = conns) #Bind both objects into a new object in the server side
-  formula  = paste(paste(c(ds.names("data_lm")[[1]][1],"~"),collapse=""),paste(ds.names("data_lm")[[1]][-1],collapse="+"),collapse="") #Define linear model formula
-  mod = ds.glm(formula = formula,data = "data_lm",family = "gaussian", datasources = conns) #Run linear model for covariates only
+  ds.dataFrameSubset(df.name = 'X',  V1.name = "ONES",  V2.name = "ONES",  Boolean.operator = "==",keep.cols = covar, newobj = 'X_lr',  datasources = conns) #Subset only columns corresponding to covariates from the X dataset
+  ds.asFactor(input.var.name = 'Y', newobj.name = 'Y_lr') #Coerce the outcome to factor in the server side
+  ds.cbind(x = c("Y_lr", "X_lr"), newobj = "data_LR",datasources = conns) #Bind both objects into a new object in the server side
+  formula  = paste(paste(c(ds.names("data_LR")[[1]][1],"~"),collapse=""),paste(ds.names("data_LR")[[1]][-1],collapse="+"),collapse="") #Define linear model formula
+  mod = ds.glm(formula = formula,data = "data_LR",family = "binomial", datasources = conns) #Run linear model for covariates only
   betaCov = mod$coefficients[-1,1] #Extract estimated coefficients
   
   return(betaCov)

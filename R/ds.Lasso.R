@@ -25,7 +25,7 @@
 
 
 #Modifications by Augusto Anguita-Ruiz.
-#Version: 05.07.2022
+#Version: 24.09.2022
 #Detail: Adding functionality of adjusting for confounders in lasso regression.
 
 
@@ -35,7 +35,6 @@
 #' @param X The design matrices of multiple cohorts 
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
-#' @param C   The hyper-parameter associated with L2 term
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
@@ -47,7 +46,7 @@
 #' @author Han Cao
 ################################################################################
 
-ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
+ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 
   #' @title Proximal operator for L1
   #' @keywords internal
@@ -67,7 +66,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   #' @param lam lambda value
   #' @return non-smooth part of objective
   nonsmooth_eval <- function (W, lam){
-    return(lam*sum(abs(W)))
+    return(sum(lam*abs(W)))
   }  
   
   # Main algorithm
@@ -76,7 +75,8 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   nSubs=sapply(dims, function(x)x[1])
   nFeats=dims[[1]][2]
   nTasks= length(dims)
-    
+  log.niterCall=0; log.nfuncCall=0
+      
   #----------Modifications for covariates adjustment
   if (!is.null(covar)) { 
   if (any(covar > nFeats) | any(covar < 1)) { 
@@ -108,7 +108,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   gamma <- 1;
   gamma_inc <- 2;
   
-  log.niterCall=0; log.nfuncCall=0
+
   
   while (iter < opts$maxIter){
     alpha <- (t_old - 1) /t;
@@ -119,8 +119,8 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LS_iter_updateDS', w.text, X, Y)
     iter_update=DSI::datashield.aggregate(datasources, cally)  
-    Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs))) + 2*C*ws
-    Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs))) + C* sum((ws)^2)
+    Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs)))
+    Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs)))
     log.niterCall=log.niterCall+1
     
     # the Armijo Goldstein line search scheme
@@ -129,7 +129,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
       w.text=paste0(as.character(round(wzp, nDigits)), collapse=",")
       cally <- call('LS_funcVal_evalDS', w.text, X, Y)
       rData=DSI::datashield.aggregate(datasources, cally)
-      Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))+ C* sum((wzp)^2)
+      Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))
       log.nfuncCall=log.nfuncCall+1
       
       delta_wzp <- wzp - ws;
@@ -180,7 +180,6 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
 #' @param X The design matrices of multiple cohorts 
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
-#' @param C   The hyper-parameter associated with L2 term
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
@@ -192,7 +191,7 @@ ds.LS_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
 #' @author Han Cao
 ################################################################################
 
-ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
+ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 
   proximal_l1 <- function (W, lambda ){
     p <- abs(W) - lambda
@@ -202,7 +201,7 @@ ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
   }
   
   nonsmooth_eval <- function (W, lam){
-    return(lam*sum(abs(W)))
+    return(sum(lam*abs(W)))
   }  
   
   
@@ -255,8 +254,8 @@ ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LR_iter_updateDS', w.text, X, Y)
     iter_update=DSI::datashield.aggregate(datasources, cally)  
-    Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs))) + 2*C*ws
-    Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs))) + C* sum((ws)^2)
+    Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs)))
+    Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs)))
     log.niterCall=log.niterCall+1
     
     # the Armijo Goldstein line search scheme
@@ -265,7 +264,7 @@ ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
       w.text=paste0(as.character(round(wzp, nDigits)), collapse=",")
       cally <- call('LR_funcVal_evalDS', w.text, X, Y)
       rData=DSI::datashield.aggregate(datasources, cally)
-      Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))+ C* sum((wzp)^2)
+      Fzp=sum(sapply(1:nTasks, function(k)rData[[k]]*nSubs[k]/sum(nSubs)))
       log.nfuncCall=log.nfuncCall+1
       
       
@@ -316,7 +315,6 @@ ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
 #' @param nlambda The length of lambda sequence
 #' @param lam_ratio smallest lambda / largest lambda
 #' @param lambda The lambda sequence   
-#' @param C   The hyper-parameter associated with L2 term
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
@@ -329,10 +327,10 @@ ds.LR_Lasso <- function (X, Y, lam, C, covar=NULL, opts, datasources, nDigits){
 #' @author Han Cao
 ################################################################################
 
-ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, C=0,covar=NULL, 
+ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, covar=NULL, 
                        opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
- 
-  
+ #browser()
+
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
@@ -352,20 +350,28 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
   penfactor <- rep(1,nFeats)
   penfactor[covar] <- 0
   penfactor=penfactor/sum(penfactor)*nFeats
+  #----------
   
+  
+  #########################
+  #for regression
+  #########################
+  if (type=="regress"){
+  
+  #----------Modifications for covariates adjustment 
   if (!is.null(covar)) {
   if (any(covar > nFeats) | any(covar < 1)) { 
   print("Error: Covariate index out of the dimensions of the input.") 
   break;
   }
   
-  ## Fit linear model for Y and only adjusting covar, and extract beta coefficients 
+  ## Fit linear model for Y and covars, and extract beta coefficients 
   betaCov=ds.lmBetas(X,Y,covar) #solve(t(X[, covar]) %*% X[, covar]) %*% t(X[, covar]) %*% Y
   
   betaCov_=paste0(as.character(betaCov), collapse=",")
   covar_=paste0(as.character(covar),collapse=",")    
   
-  cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_)
+  cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_ , type=type)
   xys=DSI::datashield.aggregate(datasources, cally)
   xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
   max_xy_norm=max(xys[setdiff(seq(nFeats),covar)])
@@ -373,19 +379,14 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
       
   } else {  
   
-  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y))
-  xys=rowSums(do.call(cbind, xys))/sum(nSubs)
-  max_xy_norm=max(abs(xys))
-  max_xy_norm
+  #xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y))
+  #xys=rowSums(do.call(cbind, xys))/sum(nSubs)
+  #max_xy_norm=max(abs(xys))
+  #max_xy_norm
   
   }
-  #~~~~~~~~~~~~~
-  
-  
-  #########################
-  #for regression
-  #########################
-  if (type=="regress"){
+  #~~~~~~~~~~~~~  
+    
     #estimate lambda sequence
     if(length(lambda)>1){
       lam_seq=lambda
@@ -403,7 +404,7 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     optsTrain=opts
     for(i in 1:length(lam_seq)){
   #----------Modifications for covariates adjustment  
-      m=ds.LS_Lasso(X=X, Y=Y, lam=lam_seq[i]*penfactor, C=C, opts=optsTrain, datasources=datasources, nDigits=nDigits)
+      m=ds.LS_LassoCov(X=X, Y=Y, lam=lam_seq[i], covar=covar, opts=optsTrain, datasources=datasources, nDigits=nDigits)
   #----------
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
@@ -413,7 +414,38 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     }
     fit$lam_seq=lam_seq
     colnames(fit$ws)=paste0("Lam=", round(lam_seq, 2))
+    
   } else if(type=="classify"){
+  
+  #----------Modifications for covariates adjustment 
+  if (!is.null(covar)) {
+  if (any(covar > nFeats) | any(covar < 1)) { 
+  print("Error: Covariate index out of the dimensions of the input.") 
+  break;
+  }
+  
+  ## Fit linear model for Y and covars, and extract beta coefficients 
+  betaCov=ds.LRBetas(X,Y,covar) #solve(t(X[, covar]) %*% X[, covar]) %*% t(X[, covar]) %*% Y
+  
+  betaCov_=paste0(as.character(betaCov), collapse=",")
+  covar_=paste0(as.character(covar),collapse=",")    
+  
+  cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_, type=type)
+  xys=DSI::datashield.aggregate(datasources, cally)
+  xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
+  xy_norm=max(xys[setdiff(seq(nFeats),covar)])
+    
+      
+  } else {  
+  
+  #xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y))
+  #xys=rowSums(do.call(cbind, xys))/sum(nSubs)
+  #xy_norm=max(abs(xys))
+  #xy_norm
+  
+  }
+  #~~~~~~~~~~~~~    
+  
     #estimate lambda sequence
     if(length(lambda)>1){
       lam_seq=lambda
@@ -431,7 +463,7 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     optsTrain=opts
     for(i in 1:length(lam_seq)){
   #----------Modifications for covariates adjustment  
-      m=ds.LR_Lasso(X=X, Y=Y, lam=lam_seq[i]*penfactor, C=C, opts=optsTrain, datasources=datasources, nDigits=nDigits)
+      m=ds.LR_LassoCov(X=X, Y=Y, lam=lam_seq[i], covar=covar, opts=optsTrain, datasources=datasources, nDigits=nDigits)
   #----------
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
@@ -460,7 +492,6 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
 #' @param nlambda The length of lambda sequence
 #' @param lam_ratio smallest lambda / largest lambda
 #' @param lambda The lambda sequence   
-#' @param C   The hyper-parameter associated with L2 term
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
@@ -473,8 +504,8 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
 #' @author Han Cao
 ################################################################################
 
-ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nlambda=10, lambda=NULL,
-                           opts=list(init=0, maxIter=50, tol=0.001, ter=2), C=0, covar=NULL, datasources=NULL, nDigits=10, intercept=F){
+ds.LassoCov_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nlambda=10, lambda=NULL,
+                           opts=list(init=0, maxIter=50, tol=0.001, ter=2),covar=NULL, datasources=NULL, nDigits=10, intercept=F){
 
     #intercept model
     if (intercept){
@@ -505,7 +536,7 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
     lam_seq=vector()
     for (k in 1:nTasks){
     #----------Modifications for covariates adjustment
-      fit=ds.Lasso_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, C=C, covar=covar, lambda=lambda, 
+      fit=ds.LassoCov_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, covar=covar, lambda=lambda, 
                          datasources=datasources[-k], nDigits=nDigits)
     #----------                     
       mse_fold=rbind(mse_fold, ds.calcMSE(ws=fit$ws, datasourceTest=datasources[k], X=X, Y=Y, average=F)[[1]])
@@ -520,7 +551,7 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
     lam_seq=vector()
     for (k in 1:nTasks){
     #----------Modifications for covariates adjustment
-      fit=ds.Lasso_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, C=C, covar=covar, lambda=lambda, 
+      fit=ds.LassoCov_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, covar=covar, lambda=lambda, 
                          datasources=datasources[-k], nDigits=nDigits)
     #----------                           
       mcr_fold=rbind(mcr_fold, ds.calcMCR(ws=fit$ws, datasourceTest=datasources[k], X=X, Y=Y, average=F)[[1]])
@@ -559,8 +590,8 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
 #' @export  
 #' @author Han Cao
 ################################################################################
-ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL,
-                          opts=list(init=0, maxIter=50, tol=0.01, ter=2), C=0, covar=NULL,  datasources=NULL, nDigits=10, intercept=F){
+ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL,
+                          opts=list(init=0, maxIter=50, tol=0.01, ter=2), covar=NULL,  datasources=NULL, nDigits=10, intercept=F){
 
     
   getCVPartition <- function(nSubs, cv_fold){
@@ -621,7 +652,7 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Xtest", symbol="X")
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Ytest", symbol="Y")
   #----------Modifications for covariates adjustment     
-      fit=ds.Lasso_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, C=C,covar=covar, lambda=lambda, 
+      fit=ds.LassoCov_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, covar=covar, lambda=lambda, 
                          datasources=datasources, nDigits=nDigits)
   #----------
       mse_task=sapply(1:nTasks, function(x) {
@@ -644,7 +675,7 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Xtest", symbol="X")
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Ytest", symbol="Y")
    #----------Modifications for covariates adjustment 
-      fit=ds.Lasso_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, C=C,covar=covar, lambda=lambda, 
+      fit=ds.LassoCov_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, covar=covar, lambda=lambda, 
                          datasources=datasources, nDigits=nDigits)
    #----------
       mcr_task=sapply(1:nTasks, function(x) {
