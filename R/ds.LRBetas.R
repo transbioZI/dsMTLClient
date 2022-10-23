@@ -25,16 +25,16 @@
 
 
 #Modification by Augusto Anguita-Ruiz.
-#Version: 05.07.2022
+#Version: 21.10.2022
 #Detail: Adding functionality of adjusting for confounders in lasso regression.
 
 
 ################################################################################
-#' @title Fit a linear model on selected covariates
+#' @title Fit a logistic regression model on selected covariates
 #' @description Fit a linear logistic regression model with only selected adjusting covariates
 #' @param X Predictors
 #' @param Y Binary-Outcome
-#' @param covar Positions corresponding to adjusting covariates in the X dataset
+#' @param covar Positions of adjusting covariates in the X dataset
 
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max

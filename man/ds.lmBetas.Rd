@@ -2,7 +2,7 @@
 % Please edit documentation in R/ds.lmBetas.R
 \name{ds.lmBetas}
 \alias{ds.lmBetas}
-\title{Fit a linear model on selected covariates}
+\title{Fit a linear regression model on selected covariates}
 \usage{
 ds.lmBetas(X, Y, covar)
 }
@@ -11,7 +11,7 @@ ds.lmBetas(X, Y, covar)
 
 \item{Y}{Outcome}
 
-\item{covar}{Positions corresponding to adjusting covariates in the X dataset}
+\item{covar}{Positions of adjusting covariates in the X dataset}
 }
 \value{
 Estimated beta coefficients for covariates

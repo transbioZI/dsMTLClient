@@ -2,7 +2,7 @@
 % Please edit documentation in R/ds.LRBetas.R
 \name{ds.LRBetas}
 \alias{ds.LRBetas}
-\title{Fit a linear model on selected covariates}
+\title{Fit a logistic regression model on selected covariates}
 \usage{
 ds.LRBetas(X, Y, covar)
 }
@@ -11,7 +11,7 @@ ds.LRBetas(X, Y, covar)
 
 \item{Y}{Binary-Outcome}
 
-\item{covar}{Positions corresponding to adjusting covariates in the X dataset}
+\item{covar}{Positions of adjusting covariates in the X dataset}
 }
 \value{
 Estimated beta coefficients for covariates
