@@ -109,8 +109,7 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
   gamma_inc <- 2;
   
 
-  
-  while (iter < opts$maxIter){
+   while (iter < opts$maxIter){
     alpha <- (t_old - 1) /t;
     ws <- (1 + alpha) * wz - alpha * wz_old;
     
@@ -118,7 +117,8 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
     ws=round(ws, nDigits)
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LS_iter_updateDS', w.text, X, Y)
-    iter_update=DSI::datashield.aggregate(datasources, cally)  
+    iter_update=DSI::datashield.aggregate(datasources, cally) 
+    
     Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs)))
     Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs)))
     log.niterCall=log.niterCall+1
@@ -330,7 +330,7 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 ################################################################################
 
 ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, covar=NULL, opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
- #browser()
+
 
   #intercept model
   if (intercept){
@@ -371,7 +371,6 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
   
   betaCov_=paste0(as.character(betaCov), collapse=",")
   covar_=paste0(as.character(covar),collapse=",")    
-  
   cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_ , type=type)
   xys=DSI::datashield.aggregate(datasources, cally)
   xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
@@ -380,6 +379,9 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
       
   } else {  
   
+  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
+  xys=rowSums(do.call(cbind, xys))/sum(nSubs)
+  max_xy_norm=max(abs(xys))
   
   }
   #~~~~~~~~~~~~~  
