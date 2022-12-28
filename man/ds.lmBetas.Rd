@@ -4,7 +4,7 @@
 \alias{ds.lmBetas}
 \title{Fit a linear regression model on selected covariates}
 \usage{
-ds.lmBetas(X, Y, covar)
+ds.lmBetas(X, Y, covar, datasources)
 }
 \arguments{
 \item{X}{Predictors}

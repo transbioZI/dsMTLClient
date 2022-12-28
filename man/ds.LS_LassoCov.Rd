@@ -2,7 +2,7 @@
 % Please edit documentation in R/ds.LassoCov.R
 \name{ds.LS_LassoCov}
 \alias{ds.LS_LassoCov}
-\title{Solver of Lasso regression with the control of covariates}
+\title{Solver of LassoCov}
 \usage{
 ds.LS_LassoCov(X, Y, lam, covar = NULL, opts, datasources, nDigits)
 }
@@ -11,30 +11,25 @@ ds.LS_LassoCov(X, Y, lam, covar = NULL, opts, datasources, nDigits)
 
 \item{Y}{Label vectors of multiple cohorts}
 
-\item{lam}{lambda value}
+\item{lam}{The hyper-parameter controlling the sparsity}
+
+\item{covar}{Positions of adjusting covariates in the X dataset}
 
 \item{opts}{Options controlling the optimization procedure}
 
 \item{datasources}{The connections of servers}
 
 \item{nDigits}{The number of digits rounded for each number prepared for network transmission}
-
-\item{W}{The current estimate of the variables}
 }
 \value{
 The converged result of optimization
-
-The proximal point of W
-
-non-smooth part of objective
 }
 \description{
-Solver of Lasso regression
+Solver of Lasso regression with controlling covariate effect
 }
 \details{
-Solver of Lasso regression
+Solver of Lasso regression with controlling covariate effect
 }
 \author{
 Han Cao & Augusto Anguita-Ruiz
 }
-\keyword{internal}

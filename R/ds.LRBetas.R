@@ -28,30 +28,42 @@
 #Version: 21.10.2022
 #Detail: Adding functionality of adjusting for confounders in lasso regression.
 
-
 ################################################################################
 #' @title Fit a logistic regression model on selected covariates
 #' @description Fit a linear logistic regression model with only selected adjusting covariates
 #' @param X Predictors
 #' @param Y Binary-Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
-
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
-
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
-ds.LRBetas= function(X,Y,covar){
+ds.LRBetas= function(X,Y,covar, datasources){
 
-  ds.make(toAssign = "X-X+1",newobj = "ONES",datasources = conns) #Create a vector of ones in the server side
-  ds.dataFrameSubset(df.name = 'X',  V1.name = "ONES",  V2.name = "ONES",  Boolean.operator = "==",keep.cols = covar, newobj = 'X_lr',  datasources = conns) #Subset only columns corresponding to covariates from the X dataset
-  ds.asFactor(input.var.name = 'Y', newobj.name = 'Y_lr') #Coerce the outcome to factor in the server side
-  ds.cbind(x = c("Y_lr", "X_lr"), newobj = "data_LR",datasources = conns) #Bind both objects into a new object in the server side
-  formula  = paste(paste(c(ds.names("data_LR")[[1]][1],"~"),collapse=""),paste(ds.names("data_LR")[[1]][-1],collapse="+"),collapse="") #Define linear model formula
-  mod = ds.glm(formula = formula,data = "data_LR",family = "binomial", datasources = conns) #Run linear model for covariates only
-  betaCov = mod$coefficients[-1,1] #Extract estimated coefficients
+  #Create a vector of ones in the server side
+  ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
+  
+  #Subset only columns corresponding to covariates from the X dataset
+  ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lr',  
+                     datasources = datasources) 
+    
+  #Coerce outcome to numeric in the server side 
+  ds.asFactor(input.var.name = Y, newobj = 'Y_lr', datasources = datasources)
+  
+  #Bind both objects into a new object in the server side
+  ds.cbind(x = c('Y_lr', 'X_lr'), newobj = 'data_LR',datasources = conns) 
+  
+  #Define linear model formula
+  formula  = paste(paste(c(ds.names('data_LR')[[1]][1],'~'),collapse=''),
+  	     paste(ds.names('data_LR')[[1]][-1],collapse='+'),collapse='') 
+  
+  #Run linear model for covariates only
+  mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = conns) 
+  
+  #Extract estimated coefficients
+  betaCov = mod$coefficients[-1,1] 
   
   return(betaCov)
   

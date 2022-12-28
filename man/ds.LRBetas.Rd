@@ -4,7 +4,7 @@
 \alias{ds.LRBetas}
 \title{Fit a logistic regression model on selected covariates}
 \usage{
-ds.LRBetas(X, Y, covar)
+ds.LRBetas(X, Y, covar, datasources)
 }
 \arguments{
 \item{X}{Predictors}

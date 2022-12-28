@@ -43,8 +43,6 @@ ds.LassoCov_CVInSite(
 \item{nDigits}{The number of digits rounded for each number prepared for network transmission}
 
 \item{intercept}{Use intercept(=TRUE) or non-intercept(=FALSE) model}
-
-\item{C}{The hyper-parameter associated with L2 term}
 }
 \value{
 The result of cross-validation

@@ -30,17 +30,18 @@
 
 
 ################################################################################
-#' @title Solver of Lasso regression with the control of covariates
-#' @description Solver of Lasso regression
+#' @title Solver of LassoCov
+#' @description Solver of Lasso regression with controlling covariate effect
 #' @param X The design matrices of multiple cohorts 
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
+#' @param covar Positions of adjusting covariates in the X dataset        
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 
 #' @return The converged result of optimization
-#' @details Solver of Lasso regression
+#' @details Solver of Lasso regression with controlling covariate effect
 
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
@@ -48,11 +49,6 @@
 
 ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 
-  #' @title Proximal operator for L1
-  #' @keywords internal
-  #' @param W The current estimate of W 
-  #' @param lam lambda value
-  #' @return The proximal point of W
   proximal_l1 <- function (W, lambda ){
     p <- abs(W) - lambda
     p=p*(p>0)
@@ -60,11 +56,6 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
     return(Wp)
   }
   
-  #' @title L1 term evaluation
-  #' @keywords internal
-  #' @param W The current estimate of the variables 
-  #' @param lam lambda value
-  #' @return non-smooth part of objective
   nonsmooth_eval <- function (W, lam){
     return(sum(lam*abs(W)))
   }  
@@ -79,10 +70,10 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
       
   #----------Modifications for covariates adjustment
   if (!is.null(covar)) { 
-  if (any(covar > nFeats) | any(covar < 1)) { 
-  print("Error: Covariate index out of the dimensions of the input.") 
-  break;
-  }
+    if (any(covar > nFeats) | any(covar < 1)) { 
+    print("Error: Covariate index out of the dimensions of the input.") 
+      break;
+    }
   }
   
   penfactor <- rep(1,nFeats)
@@ -108,8 +99,7 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
   gamma <- 1;
   gamma_inc <- 2;
   
-
-   while (iter < opts$maxIter){
+  while (iter < opts$maxIter){
     alpha <- (t_old - 1) /t;
     ws <- (1 + alpha) * wz - alpha * wz_old;
     
@@ -118,7 +108,6 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
     w.text=paste0(as.character(ws), collapse=",")
     cally <- call('LS_iter_updateDS', w.text, X, Y)
     iter_update=DSI::datashield.aggregate(datasources, cally) 
-    
     Gws <- rowSums(sapply(1:nTasks, function(k)iter_update[[k]][[1]]*nSubs[k]/sum(nSubs)))
     Fs <- sum(sapply(1:nTasks, function(k)iter_update[[k]][[2]]*nSubs[k]/sum(nSubs)))
     log.niterCall=log.niterCall+1
@@ -180,8 +169,8 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @param X The design matrices of multiple cohorts 
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
-#' @param covar Positions of adjusting covariates in the X dataset     
-#' @param opts Options controlling the optimization procedure     
+#' @param covar Positions of adjusting covariates in the X dataset        
+#' @param opts Options controlling the optimization procedure  
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 
@@ -215,10 +204,10 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
   
   #----------Modifications for covariates adjustment
   if (!is.null(covar)) { 
-  if (any(covar > nFeats) | any(covar < 1)) { 
-  print("Error: Covariate index out of the dimensions of the input.") 
-  break;
-  }
+    if (any(covar > nFeats) | any(covar < 1)) { 
+      print("Error: Covariate index out of the dimensions of the input.") 
+      break;
+    }
   }
   penfactor <- rep(1,nFeats)
   penfactor[covar] <- 0
@@ -232,7 +221,6 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
   }else if(opts$init==1){
     w0 <- opts$w0
   }    
-  
   
   bFlag <- 0; 
   wz <- w0;
@@ -307,6 +295,9 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 
 
 
+
+
+
 ################################################################################
 #' @title Training a regularization tree with the control of covariates
 #' @description Training a regularization tree with Lasso
@@ -329,7 +320,8 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
-ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, covar=NULL, opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
+ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, covar=NULL, 
+			opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
 
 
   #intercept model
@@ -367,10 +359,11 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
   }
   
   ## Fit linear model for Y and covars, and extract beta coefficients 
-  betaCov=ds.lmBetas(X,Y,covar) #solve(t(X[, covar]) %*% X[, covar]) %*% t(X[, covar]) %*% Y
-  
+  betaCov=ds.lmBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
+    
   betaCov_=paste0(as.character(betaCov), collapse=",")
   covar_=paste0(as.character(covar),collapse=",")    
+  
   cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_ , type=type)
   xys=DSI::datashield.aggregate(datasources, cally)
   xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
@@ -402,9 +395,9 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
     #warm-start training procedure
     optsTrain=opts
     for(i in 1:length(lam_seq)){
-  #----------Modifications for covariates adjustment  
+      #----------Modifications for covariates adjustment  
       m=ds.LS_LassoCov(X=X, Y=Y, lam=lam_seq[i], covar=covar, opts=optsTrain, datasources=datasources, nDigits=nDigits)
-  #----------
+      #----------
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
       fit$Obj=c(fit$Obj, m$Obj)
@@ -424,7 +417,7 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
   }
   
   ## Fit linear model for Y and covars, and extract beta coefficients 
-  betaCov=ds.LRBetas(X,Y,covar) #solve(t(X[, covar]) %*% X[, covar]) %*% t(X[, covar]) %*% Y
+  betaCov=ds.LRBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
   
   betaCov_=paste0(as.character(betaCov), collapse=",")
   covar_=paste0(as.character(covar),collapse=",")    
@@ -437,6 +430,9 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
       
   } else {  
   
+  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
+  xys=rowSums(do.call(cbind, xys))/sum(nSubs)
+  max_xy_norm=max(abs(xys))
   
   }
   #~~~~~~~~~~~~~    
@@ -457,9 +453,9 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
     #warm-start training procedure
     optsTrain=opts
     for(i in 1:length(lam_seq)){
-  #----------Modifications for covariates adjustment  
+      #----------Modifications for covariates adjustment  
       m=ds.LR_LassoCov(X=X, Y=Y, lam=lam_seq[i], covar=covar, opts=optsTrain, datasources=datasources, nDigits=nDigits)
-  #----------
+      #----------
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
       fit$Obj=c(fit$Obj, m$Obj)
@@ -478,90 +474,6 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
 
 
 
-################################################################################
-#' @title Cross-site cross-validation with the control of covariates
-#' @description Cross-site cross-validation
-#' @param X The design matrices of multiple cohorts 
-#' @param Y Label vectors of multiple cohorts
-#' @param type regression(=regress) or classification(=classify)
-#' @param nlambda The length of lambda sequence
-#' @param lam_ratio smallest lambda / largest lambda
-#' @param lambda The lambda sequence   
-#' @param opts Options controlling the optimization procedure     
-#' @param covar Positions of adjusting covariates in the X dataset     
-#' @param datasources The connections of servers   
-#' @param nDigits The number of digits rounded for each number prepared for network transmission 
-#' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
-#' @return The result of cross-validation
-#' @details Cross-site cross-validation
-
-#' @export  
-#' @author  Han Cao & Augusto Anguita-Ruiz
-################################################################################
-
-ds.LassoCov_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nlambda=10, lambda=NULL, opts=list(init=0, maxIter=50, tol=0.001, ter=2),covar=NULL, datasources=NULL, nDigits=10, intercept=F){
-
-    #intercept model
-    if (intercept){
-      Xnew=paste0(X, ".intercept")
-      DSI::datashield.assign.expr(conns = datasources, symbol = Xnew, expr =  call('addInterceptDS', X))
-      X=Xnew
-    }
-    
-  cvResult=list(); cvResult$type=type; cvResult$C=C; 
-  dims=DSI::datashield.aggregate(datasources, call("dimDS",X ))
-  nFeats=dims[[1]][2]
-  nSubs=sapply(dims,function(x)x[1])
-  nTasks=length(dims)
-  #source("./dsMTLClient/ds.calcMSE.R")
-  #source("./dsMTLClient/ds.calcMCR.R")
-
-  #----------Modifications for covariates adjustment
-  if (!is.null(covar)) { 
-  if (any(covar > nFeats) | any(covar < 1)) { 
-  print("Error: Covariate index out of the dimensions of the input.") 
-  break;
-  }
-  }
-  #----------
-  
-  if (type=="regress"){
-    mse_fold=vector()
-    lam_seq=vector()
-    for (k in 1:nTasks){
-    #----------Modifications for covariates adjustment
-      fit=ds.LassoCov_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, covar=covar, lambda=lambda, 
-                         datasources=datasources[-k], nDigits=nDigits)
-    #----------                     
-      mse_fold=rbind(mse_fold, ds.calcMSE(ws=fit$ws, datasourceTest=datasources[k], X=X, Y=Y, average=F)[[1]])
-      lam_seq=rbind(lam_seq, fit$lam_seq)
-    }
-    lambda.min=mean(sapply(1:nTasks, function(k)lam_seq[k,order(mse_fold[k,])[1]]))
-    colnames(mse_fold)=paste0("Lam",1:ncol(mse_fold))
-    colnames(lam_seq)=paste0("Lam",1:ncol(mse_fold))
-    cvResult$lam_seq=lam_seq; cvResult$mse_fold=mse_fold; cvResult$lambda.min=lambda.min
-  } else if(type=="classify"){
-    mcr_fold=vector()
-    lam_seq=vector()
-    for (k in 1:nTasks){
-    #----------Modifications for covariates adjustment
-      fit=ds.LassoCov_Train(X=X, Y=Y, nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, covar=covar, lambda=lambda, 
-                         datasources=datasources[-k], nDigits=nDigits)
-    #----------                           
-      mcr_fold=rbind(mcr_fold, ds.calcMCR(ws=fit$ws, datasourceTest=datasources[k], X=X, Y=Y, average=F)[[1]])
-      lam_seq=rbind(lam_seq, fit$lam_seq)
-    }
-    lambda.min=mean(sapply(1:nTasks, function(k)lam_seq[k,order(mcr_fold[k,])[1]]))
-    colnames(mcr_fold)=paste0("Lam",1:ncol(mcr_fold))
-    colnames(lam_seq)=paste0("Lam",1:ncol(mcr_fold))
-    cvResult$lam_seq=lam_seq; cvResult$mcr_fold=mcr_fold; cvResult$lambda.min=lambda.min
-  }
-  return(cvResult)
-}
-
-
-
 
 ################################################################################
 #' @title In-site cross-validation with the control of covariates
@@ -573,7 +485,6 @@ ds.LassoCov_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01,
 #' @param nlambda The length of lambda sequence
 #' @param lam_ratio smallest lambda / largest lambda
 #' @param lambda The lambda sequence   
-#' @param C   The hyper-parameter associated with L2 term
 #' @param opts Options controlling the optimization procedure
 #' @param covar Positions of adjusting covariates in the X dataset     
 #' @param datasources The connections of servers   
@@ -586,7 +497,8 @@ ds.LassoCov_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01,
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
-ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL, opts=list(init=0, maxIter=50, tol=0.01, ter=2), covar=NULL,  datasources=NULL, nDigits=10, intercept=F){
+ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_ratio=0.01, nlambda=10, lambda=NULL,
+			 opts=list(init=0, maxIter=50, tol=0.01, ter=2), covar=NULL,  datasources=NULL, nDigits=10, intercept=F){
 
     
   getCVPartition <- function(nSubs, cv_fold){
@@ -622,7 +534,7 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
   nFeats=dims[[1]][2]
   nSubs=sapply(dims,function(x)x[1])
   nTasks=length(dims)
-  cvResult=list(); cvResult$type=type; cvResult$C=C; 
+  cvResult=list(); cvResult$type=type;
   cvPar <- getCVPartition(nSubs, nfolds)
   
   #----------Modifications for covariates adjustment
@@ -642,10 +554,10 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTrain, newSymbol="Ytrain", symbol="Y")
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Xtest", symbol="X")
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Ytest", symbol="Y")
-  #----------Modifications for covariates adjustment     
+      #----------Modifications for covariates adjustment     
       fit=ds.LassoCov_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, covar=covar, lambda=lambda, 
                          datasources=datasources, nDigits=nDigits)
-  #----------
+      #----------
       mse_task=sapply(1:nTasks, function(x) {
         mse=ds.calcMSE(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", average=F)
         mse=mse[[1]]*nSubs[x]/sum(nSubs)
