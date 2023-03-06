@@ -24,11 +24,6 @@
 ################################################################################
 
 
-#Modifications by Augusto Anguita-Ruiz.
-#Version: 21.10.2022
-#Detail: Adding functionality of controlling for covariates in Lasso regression.
-
-
 ################################################################################
 #' @title Solver of LassoCov
 #' @description Solver of Lasso regression with controlling covariate effect
