@@ -1,13 +1,18 @@
 Package: dsMTLClient
 Type: Package
 Title: dsMTL client side functions 
-Version: 0.9
-Date: 2021-07-01
-Author: Han Cao, Youcheng Zhang, Carl Herrmann and Emanuel Schwarz
+Version: 0.10.0
+Date: 2023-03-06
+Author: Han Cao, Augusto Anguita-Ruiz,  Youcheng Zhang, Carl Herrmann and Emanuel Schwarz
 Authors@R: 
     c(person(given = "Han",
              family = "Cao",
              role = c("aut", "cre", "cph"),
+             email = "hank9cao@gmail.com",
+             comment = c(ORCID = "0000-0002-5226-218X")),
+      person(given = "Augusto",
+             family = "Anguita-Ruiz",
+             role = c("aut"),
              email = "hank9cao@gmail.com",
              comment = c(ORCID = "0000-0002-5226-218X")),
       person(given = "Youcheng",
