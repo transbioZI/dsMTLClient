@@ -24,11 +24,6 @@
 ################################################################################
 
 
-#Modification by Augusto Anguita-Ruiz.
-#Version: 21.10.2022
-#Detail: Adding functionality of adjusting for confounders in lasso regression.
-
-
 ################################################################################
 #' @title Fit a linear regression model on selected covariates
 #' @description Fit a linear regression model with only selected adjusting covariates
