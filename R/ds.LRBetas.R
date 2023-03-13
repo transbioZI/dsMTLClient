@@ -36,7 +36,6 @@
 #' @param covar Positions of adjusting covariates in the X dataset
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
-#' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
