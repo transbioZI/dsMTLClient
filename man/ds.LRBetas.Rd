@@ -12,6 +12,8 @@ ds.LRBetas(X, Y, covar, datasources)
 \item{Y}{Binary-Outcome}
 
 \item{covar}{Positions of adjusting covariates in the X dataset}
+
+\item{datasources}{The connections of servers}
 }
 \value{
 Estimated beta coefficients for covariates
