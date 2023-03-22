@@ -2,85 +2,47 @@ rm(list=ls())
 gc()
 #load libraries
 library(DSI)
-library(DSOpal)
+library(DSMolgenisArmadillo)
 library(dsMTLClient)
-
-
-
-#ns=seq(10,200, 2); p=50; sp=0.7; type="regress"
-#shared low-dimentions, random noises, data dimension
-createDataset=function(ns, p, nRank, type){
-  requireNamespace('corpcor')
-  W = matrix(stats::rnorm(length(ns)*p, mean=1, sd=1),nrow = p, ncol = length(ns))
-  eigen <- corpcor::fast.svd(W)
-  eigen$d[(nRank+1):length(eigen$d)]=0
-  if (length(eigen$d)>1){
-    Wp <- eigen$u %*% diag(eigen$d) %*% t(eigen$v)
-  }else{
-    Wp <- (eigen$u * eigen$d) %*% t(eigen$v)
-  }
-  W=Wp
-  
-  X=list(); Y=list()
-  for(i in 1:length(ns)){
-    xx <- matrix(data=stats::rnorm(ns[i]*p),ncol=p, nrow = ns[i])
-    xx=apply(xx, 2, function(x)(x-mean(x))/sd(x))
-    y=xx %*% W[,i]
-    y=(y-mean(y))/sd(y)
-    if(type=="regress"){
-      yy <- y + stats::rnorm(ns[i], sd = 0.5, mean = 0)
-    } else if (type=="classify"){
-      yy <- sign(y + stats::rnorm(ns[i], sd = 0.1, mean = 0))
-    }
-    X[[i]]=xx; Y[[i]]=yy
-  }
-  return(list(X=X, Y=Y, W=W))
-}
 
 
 
 ##################################################################################################################
 #login data
 ##################################################################################################################
-builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = "https://192.168.56.100:8443/", user = "administrator",
-               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
-builder$append(server="s2", url = "https://192.168.56.100:8443/", user = "administrator",
-               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+builder <- DSI::newDSLoginBuilder(.silent = TRUE)
+builder$append(server="s1", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
+builder$append(server="s2", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
+
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
 datashield.symbols(datasources)
-##################################################################################################################
-
-
-
-
-
-
-
-
 ##################################################################################################################
 #Regression
 ##################################################################################################################
 
 ##########################
-#create and upload data
+#load data
 ##########################
-data=createDataset(ns=c(50,50), p=60, nRank=1, type="regress")
-XX=data$X; YY=data$Y
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsMTL_Trace_R_X")
+datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsMTL_Trace_R_Y")
+datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
+
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsMTL_Trace_R_X")
+datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsMTL_Trace_R_Y")
+datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
 X="X"; Y="Y"
 
-serverKey1=list(server=datasources[1], key="mannheim2022")
-serverKey2=list(server=datasources[2], key="mannheim2022")
-ds.setMyServerData(serverKey1, data=XX[[1]], symbol="X")
-ds.setMyServerData(serverKey1, data=YY[[1]], symbol="Y")
-ds.setMyServerData(serverKey2, data=XX[[2]], symbol="X")
-ds.setMyServerData(serverKey2, data=YY[[2]], symbol="Y")
-str(ds.getMyServerData(serverKey1, "Y"))
-str(ds.getMyServerData(serverKey2, "Y"))
-
-opts=list();opts$init=0; opts$maxIter=50; opts$tol=0.01; opts$ter=2;
 ##########################
+#set options for solver
+##########################
+opts=list();opts$init=0; opts$maxIter=50; opts$tol=0.01; opts$ter=2;
+
+
 
 
 ##########################
@@ -153,22 +115,25 @@ cor(fit$ws[[1]])
 ##################################################################################################################
 
 ##########################
-#create and upload data
+#load data
 ##########################
-data=createDataset(ns=c(50,50), p=60, nRank=1, type="classify")
-XX=data$X; YY=data$Y; X="X"; Y="Y"
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsMTL_Trace_C_X")
+datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsMTL_Trace_C_Y")
+datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-serverKey1=list(server=datasources[1], key="mannheim2022")
-serverKey2=list(server=datasources[2], key="mannheim2022")
-ds.setMyServerData(serverKey1, data=XX[[1]], symbol="X")
-ds.setMyServerData(serverKey1, data=YY[[1]], symbol="Y")
-ds.setMyServerData(serverKey2, data=XX[[2]], symbol="X")
-ds.setMyServerData(serverKey2, data=YY[[2]], symbol="Y")
-str(ds.getMyServerData(serverKey1, "Y"))
-str(ds.getMyServerData(serverKey2, "Y"))
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsMTL_Trace_C_X")
+datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsMTL_Trace_C_Y")
+datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
+X="X"; Y="Y"
 
+##########################
+#set options for solver
+##########################
 opts=list();opts$init=0; opts$maxIter=50; opts$tol=0.01; opts$ter=2;
-##########################
+
+
 
 ##########################
 #Tests for solvers
@@ -228,26 +193,4 @@ cor(fit$ws[[1]])
 ##################################################################################################################
 
 DSI::datashield.logout(datasources)
-
-
-data=createDataset(ns=c(50,50), p=60, nRank=1, type="regress")
-XX=data$X; YY=data$Y
-X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_R_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_R_Y.rda")
-
-X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_R_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_R_Y.rda")
-
-data=createDataset(ns=c(50,50), p=60, nRank=1, type="classify")
-XX=data$X; YY=data$Y
-X=XX[[1]]; Y=matrix(YY[[1]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_C_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_Trace_C_Y.rda")
-
-X=XX[[2]]; Y=matrix(YY[[2]], ncol=1)
-save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_C_X.rda")
-save(Y, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_Trace_C_Y.rda")
-
 

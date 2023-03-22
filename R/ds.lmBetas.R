@@ -30,16 +30,20 @@
 #' @param X Predictors
 #' @param Y Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
+<<<<<<< HEAD
+=======
+#' @param datasources The connections of servers
+>>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
 
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
 
-#' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
 ds.lmBetas= function(X,Y,covar, datasources){
   #Create a vector of ones in the server side
+<<<<<<< HEAD
   ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
 
   #Subset only columns corresponding to covariates from the X dataset
@@ -58,6 +62,26 @@ ds.lmBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
+=======
+  dsBaseClient::ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
+
+  #Subset only columns corresponding to covariates from the X dataset
+  dsBaseClient::ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lm',  
+                     datasources = datasources) 
+  
+  #Coerce outcome to numeric in the server side 
+  dsBaseClient::ds.asNumeric(x.name = Y, newobj = 'Y_lm', datasources = datasources)
+  
+  #Bind both objects into a new object in the server side
+  dsBaseClient::ds.cbind(x = c('Y_lm', 'X_lm'), newobj = 'data_lm',datasources = datasources)
+  
+  #Define linear model formula
+  formula  = paste(paste(c(dsBaseClient::ds.names('data_lm', datasources = datasources)[[1]][1],'~'),collapse=''),
+                   paste(dsBaseClient::ds.names('data_lm', datasources = datasources)[[1]][-1],collapse='+'),collapse='') 
+  
+  #Run linear model for covariates only
+  mod = dsBaseClient::ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
+>>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
   betaCov = mod$coefficients[-1,1] #Extract estimated coefficients
   
   return(betaCov)

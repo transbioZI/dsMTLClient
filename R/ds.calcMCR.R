@@ -38,6 +38,7 @@
 #' @return The MCR of each coefficient vectors (or averaged MCR)
 #' @details Calculate missing classification rate (MCR) on the target server
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

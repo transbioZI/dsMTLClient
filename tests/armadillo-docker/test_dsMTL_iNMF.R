@@ -2,58 +2,40 @@ rm(list=ls())
 gc()
 #load libraries
 library(DSI)
-library(DSOpal)
+library(DSMolgenisArmadillo)
 library(dsMTLClient)
 
 
-simulateData2= function(){
-  xx=matrix(0, 50, 50)
-  xx[1:30, 1:25]=1
-  x1=xx+abs(matrix(rnorm(50*50, mean=0, sd=1)*0.1, 50, 50))
-
-  xx=matrix(0, 50, 50)
-  xx[1:20, 1:25]=1
-  xx[31:40, 1:25]=1
-  x2=xx+abs(matrix(rnorm(50*50, mean=0, sd=1)*0.1, 50, 50))
-  
-  return(list(x1, x2))
-}
-
-
-
-
-#################################################################################################################################
+##################################################################################################################
 #login data
-#################################################################################################################################
-builder <- DSI::newDSLoginBuilder()
-builder$append(server="study1", url = "https://192.168.56.100:8443/", user = "administrator",
-               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
-builder$append(server="study2", url = "https://192.168.56.100:8443/",  user = "administrator",
-               password = "datashield_test&", driver = "OpalDriver", options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+##################################################################################################################
+builder <- DSI::newDSLoginBuilder(.silent = TRUE)
+builder$append(server="s1", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
+builder$append(server="s2", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
+datashield.symbols(datasources)
 #################################################################################################################################
 
 
 
-#################################################################################################################################
-#create and upload data
-#################################################################################################################################
-XX=simulateData2()
-X1=XX[[1]]; X2=XX[[2]]; 
 
-serverKey1=list(server=datasources[1], key="mannheim2022")
-serverKey2=list(server=datasources[2], key="mannheim2022")
-ds.setMyServerData(serverKey1, data=X1, symbol="X")
-ds.setMyServerData(serverKey2, data=X2, symbol="X")
-image(t(apply(ds.getMyServerData(serverKey1, "X")[[1]], 2, rev)))
-image(t(apply(ds.getMyServerData(serverKey2, "X")[[1]], 2, rev)))
 
+##########################
+#load data
+##########################
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsMTL_iNMF_X")
+datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsMTL_iNMF_X")
+datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
+
+##########################
+#set options for solver
+##########################
 solveOpt=list(maxIter=50, tol=0.01, ter=2)
-#################################################################################################################################
-
-
 
 
 #################################################################################################################################
@@ -80,6 +62,15 @@ plot(mm.dist$objList, ylab="objective values", xlab="iteration")
 #Tests for algorithm training
 #################################################################################################################################
 mm = ds.MTL_iNMF_Train(datasources = datasources, Xs = "X", rank = 1, n_initializations = 3, Sp = 0.01, lam = 10, opts=solveOpt)
+
+#Get raw data
+library(resourcer)
+XX=list()
+res <- newResource(url = "https://github.com/transbioZI/dsMTLClient/raw/main/inst/simuData/opal-demo/dsMTL_Server1/dsMTL_iNMF_X.rda", format = "matrix")
+XX[[1]]=as.resource.object(newResourceClient(res))
+res <- newResource(url = "https://github.com/transbioZI/dsMTLClient/raw/main/inst/simuData/opal-demo/dsMTL_Server2/dsMTL_iNMF_X.rda", format = "matrix")
+XX[[2]]=as.resource.object(newResourceClient(res))
+
 #plot the raw matrices and the identified shared component
 par(mfrow=c(1,3))
 image(t(apply(XX[[1]], 2, rev)), xlab="raw data matrix 1")
@@ -88,19 +79,3 @@ image(t(apply(do.call(cbind, mm$H_all), 2, rev)), xlab="3 initializations", ylab
 #################################################################################################################################
 
 DSI::datashield.logout(datasources)
-
-
-XX=simulateData2()
-X=XX[[1]]
-save(X, file="inst/simuData/opal-demo/dsMTL_Server1/dsMTL_iNMF_X.rda")
-
-X=XX[[2]]
-save(X, file="inst/simuData/opal-demo/dsMTL_Server2/dsMTL_iNMF_X.rda")
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@ rm(list=ls())
 gc()
 #load libraries
 library(DSI)
-library(DSOpal)
+library(DSMolgenisArmadillo)
 library(dsMTLClient)
 
 
@@ -10,11 +10,11 @@ library(dsMTLClient)
 ##################################################################################################################
 #login data
 ##################################################################################################################
-builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
-builder$append(server="s2", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
+builder <- DSI::newDSLoginBuilder(.silent = TRUE)
+builder$append(server="s1", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
+builder$append(server="s2", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
@@ -32,14 +32,14 @@ datashield.symbols(datasources)
 ##########################
 #load data
 ##########################
-datashield.assign.resource(datasources[1],symbol="X",resource = "dsMTL_Server1.dsMTL_L21_R_X")
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsMTL_L21_R_X")
 datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[1],symbol="Y",resource = "dsMTL_Server1.dsMTL_L21_R_Y")
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsMTL_L21_R_Y")
 datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-datashield.assign.resource(datasources[2],symbol="X",resource = "dsMTL_Server2.dsMTL_L21_R_X")
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsMTL_L21_R_X")
 datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[2],symbol="Y",resource = "dsMTL_Server2.dsMTL_L21_R_Y")
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsMTL_L21_R_Y")
 datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
 X="X"; Y="Y"
 
@@ -116,14 +116,14 @@ fit$ws[[1]]
 ##########################
 #load data
 ##########################
-datashield.assign.resource(datasources[1],symbol="X",resource = "dsMTL_Server1.dsMTL_L21_C_X")
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsMTL_L21_C_X")
 datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[1],symbol="Y",resource = "dsMTL_Server1.dsMTL_L21_C_Y")
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsMTL_L21_C_Y")
 datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-datashield.assign.resource(datasources[2],symbol="X",resource = "dsMTL_Server2.dsMTL_L21_C_X")
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsMTL_L21_C_X")
 datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[2],symbol="Y",resource = "dsMTL_Server2.dsMTL_L21_C_Y")
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsMTL_L21_C_Y")
 datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
 X="X"; Y="Y"
 

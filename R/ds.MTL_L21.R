@@ -41,6 +41,7 @@
 #' @return The converged result of optimization
 #' @details Solver of FeMTL with least-square loss for joint feature selection
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

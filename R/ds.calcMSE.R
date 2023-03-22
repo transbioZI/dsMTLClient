@@ -38,6 +38,7 @@
 #' @return The MSE of each coefficient vector (or averaged MSE)
 #' @details Calculate mean-squared error (MSE) on the target server
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

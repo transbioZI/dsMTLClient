@@ -2,7 +2,7 @@ rm(list=ls())
 gc()
 #load libraries
 library(DSI)
-library(DSOpal)
+library(DSMolgenisArmadillo)
 library(dsMTLClient)
 
 
@@ -11,11 +11,11 @@ library(dsMTLClient)
 ##################################################################################################################
 #login data
 ##################################################################################################################
-builder <- DSI::newDSLoginBuilder()
-builder$append(server="s1", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
-builder$append(server="s2", url = 'https://opal-demo.obiba.org', user = 'dsuser',
-               password = 'P@ssw0rd', driver = "OpalDriver", profile="mtl")
+builder <- DSI::newDSLoginBuilder(.silent = TRUE)
+builder$append(server="s1", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
+builder$append(server="s2", url = 'http://localhost:8080', user = 'admin',
+               password = 'admin', driver = "ArmadilloDriver", profile="default")
 
 logindata <- builder$build()
 datasources <- DSI::datashield.login(logins = logindata, assign = TRUE)
@@ -35,14 +35,14 @@ datashield.symbols(datasources)
 ##########################
 #load data
 ##########################
-datashield.assign.resource(datasources[1],symbol="X",resource = "dsMTL_Server1.dsLasso_R_X")
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsLasso_R_X")
 datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[1],symbol="Y",resource = "dsMTL_Server1.dsLasso_R_Y")
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsLasso_R_Y")
 datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-datashield.assign.resource(datasources[2],symbol="X",resource = "dsMTL_Server2.dsLasso_R_X")
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsLasso_R_X")
 datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[2],symbol="Y",resource = "dsMTL_Server2.dsLasso_R_Y")
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsLasso_R_Y")
 datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
 X="X"; Y="Y"
 
@@ -56,10 +56,12 @@ opts=list();opts$init=0; opts$maxIter=10; opts$tol=0.01; opts$ter=2;
 ##########################
 #use case 1: Lasso solver
 m1=ds.LS_Lasso(X, Y, lam=0.1, C=0, opts, datasources=datasources, nDigits=4)
+
 #plot objectives
 plot(m1$Obj, ylab="objective values", xlab="iteration")
 #use case 2: elastic net solver
 m2=ds.LS_Lasso(X, Y, lam=0.1, C=10, opts, datasources=datasources, nDigits=4)
+
 #plot objectives
 plot(m2$Obj, ylab="objective values", xlab="iteration")
 #The number of non-zero coefficients
@@ -113,14 +115,14 @@ plot(fit$ws, xlab="index of coefficients", ylab="values")
 ##########################
 #load data
 ##########################
-datashield.assign.resource(datasources[1],symbol="X",resource = "dsMTL_Server1.dsLasso_C_X")
+datashield.assign.resource(datasources[1],symbol="X",resource = "dsmtlserver1/test/dsLasso_C_X")
 datashield.assign.expr(conns = datasources[1],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[1],symbol="Y",resource = "dsMTL_Server1.dsLasso_C_Y")
+datashield.assign.resource(datasources[1],symbol="Y",resource = "dsmtlserver1/test/dsLasso_C_Y")
 datashield.assign.expr(conns = datasources[1],  symbol = "Y", expr = quote(as.resource.object(Y)))
 
-datashield.assign.resource(datasources[2],symbol="X",resource = "dsMTL_Server2.dsLasso_C_X")
+datashield.assign.resource(datasources[2],symbol="X",resource = "dsmtlserver2/test/dsLasso_C_X")
 datashield.assign.expr(conns = datasources[2],  symbol = "X", expr = quote(as.resource.object(X)))
-datashield.assign.resource(datasources[2],symbol="Y",resource = "dsMTL_Server2.dsLasso_C_Y")
+datashield.assign.resource(datasources[2],symbol="Y",resource = "dsmtlserver2/test/dsLasso_C_Y")
 datashield.assign.expr(conns = datasources[2],  symbol = "Y", expr = quote(as.resource.object(Y)))
 X="X"; Y="Y"
 

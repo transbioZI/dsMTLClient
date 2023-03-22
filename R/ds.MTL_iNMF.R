@@ -42,6 +42,7 @@
 #' @return The converged result of optimization
 #' @details Solver of Federated NMF
 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
