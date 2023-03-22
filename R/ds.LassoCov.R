@@ -590,5 +590,3 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
   }
   return(cvResult)
 }
-
-

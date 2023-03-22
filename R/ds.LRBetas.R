@@ -48,7 +48,7 @@
 ds.LRBetas= function(X,Y,covar, datasources){
 
   #Create a vector of ones in the server side
-  ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
+  ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
   ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lr',  
@@ -66,7 +66,7 @@ ds.LRBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = conns) 
-  dsBaseClient::ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
+  dsBaseClient::ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
   dsBaseClient::ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lr',  
