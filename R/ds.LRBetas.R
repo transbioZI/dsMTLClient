@@ -34,24 +34,20 @@
 #' @param X Predictors
 #' @param Y Binary-Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
-<<<<<<< HEAD
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
 #' @export  
-=======
 #' @param datasources The connections of servers
 #' 
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
 #' 
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 
 ds.LRBetas= function(X,Y,covar, datasources){
 
   #Create a vector of ones in the server side
-<<<<<<< HEAD
   ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
@@ -70,7 +66,6 @@ ds.LRBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = conns) 
-=======
   dsBaseClient::ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
@@ -89,7 +84,6 @@ ds.LRBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = dsBaseClient::ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = datasources) 
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
   
   #Extract estimated coefficients
   betaCov = mod$coefficients[-1,1] 

@@ -30,11 +30,7 @@
 #' @param X Predictors
 #' @param Y Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
-<<<<<<< HEAD
-=======
 #' @param datasources The connections of servers
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
-
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
 
@@ -43,7 +39,6 @@
 
 ds.lmBetas= function(X,Y,covar, datasources){
   #Create a vector of ones in the server side
-<<<<<<< HEAD
   ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
 
   #Subset only columns corresponding to covariates from the X dataset
@@ -62,7 +57,6 @@ ds.lmBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
-=======
   dsBaseClient::ds.make(toAssign = paste0(Y, '-', Y, '+1'),newobj = 'ONES',datasources = datasources)
 
   #Subset only columns corresponding to covariates from the X dataset
@@ -81,7 +75,7 @@ ds.lmBetas= function(X,Y,covar, datasources){
   
   #Run linear model for covariates only
   mod = dsBaseClient::ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
+
   betaCov = mod$coefficients[-1,1] #Extract estimated coefficients
   
   return(betaCov)
