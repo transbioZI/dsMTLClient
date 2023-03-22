@@ -12,11 +12,8 @@ ds.lmBetas(X, Y, covar, datasources)
 \item{Y}{Outcome}
 
 \item{covar}{Positions of adjusting covariates in the X dataset}
-<<<<<<< HEAD
-=======
 
 \item{datasources}{The connections of servers}
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
 }
 \value{
 Estimated beta coefficients for covariates

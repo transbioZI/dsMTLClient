@@ -12,19 +12,20 @@ ds.LRBetas(X, Y, covar, datasources)
 \item{Y}{Binary-Outcome}
 
 \item{covar}{Positions of adjusting covariates in the X dataset}
-<<<<<<< HEAD
-=======
 
 \item{datasources}{The connections of servers}
->>>>>>> 689f649de5b781e6afa5ac50de4bc630988c39ed
 }
 \value{
+Estimated beta coefficients for covariates
+
 Estimated beta coefficients for covariates
 }
 \description{
 Fit a linear logistic regression model with only selected adjusting covariates
 }
 \details{
+Beta coefficients are employed for the estimation of lambda max
+
 Beta coefficients are employed for the estimation of lambda max
 }
 \author{
