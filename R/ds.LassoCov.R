@@ -28,7 +28,7 @@
 #' @title Solver of LassoCov
 #' @description Solver of Lasso regression with controlling covariate effect
 #' @param X The design matrices of multiple cohorts 
-#' @param Y Label vectors of multiple cohorts
+#' @param Y Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)
 #' @param lam The hyper-parameter controlling the sparsity   
 #' @param covar Positions of adjusting covariates in the X dataset        
 #' @param opts Options controlling the optimization procedure     
@@ -162,7 +162,7 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @title Solver of logistic regression with the control of covariates
 #' @description Solver of logistic regression with Lasso
 #' @param X The design matrices of multiple cohorts 
-#' @param Y Label vectors of multiple cohorts
+#' @param Y Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)
 #' @param lam The hyper-parameter controlling the sparsity   
 #' @param covar Positions of adjusting covariates in the X dataset        
 #' @param opts Options controlling the optimization procedure  
@@ -297,7 +297,7 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @title Training a regularization tree with the control of covariates
 #' @description Training a regularization tree with Lasso
 #' @param X The design matrices of multiple cohorts 
-#' @param Y Label vectors of multiple cohorts
+#' @param Y Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)
 #' @param type regression(=regress) or classification(=classify)
 #' @param nlambda The length of lambda sequence
 #' @param lam_ratio smallest lambda / largest lambda
@@ -436,11 +436,11 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
     if(length(lambda)>1){
       lam_seq=lambda
     } else if(length(lambda)==1){
-      lam_max=max(xy_norm/2)
+      lam_max=max(max_xy_norm/2)
       lam_min=lambda
       lam_seq=exp(seq(log(lam_max),log(lam_min),length.out = nlambda))
     } else if(is.null(lambda)){
-      lam_max=max(xy_norm/2)
+      lam_max=max(max_xy_norm/2)
       lam_min=lam_ratio*lam_max
       lam_seq=exp(seq(log(lam_max),log(lam_min),length.out = nlambda))
     }
@@ -474,7 +474,7 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
 #' @title In-site cross-validation with the control of covariates
 #' @description In-site cross-validation
 #' @param X The design matrices of multiple cohorts 
-#' @param Y Label vectors of multiple cohorts
+#' @param Y Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)
 #' @param type regression(=regress) or classification(=classify)
 #' @param nfolds The number of folds
 #' @param nlambda The length of lambda sequence
@@ -590,5 +590,3 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
   }
   return(cvResult)
 }
-
-

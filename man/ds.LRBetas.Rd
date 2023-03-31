@@ -17,11 +17,15 @@ ds.LRBetas(X, Y, covar, datasources)
 }
 \value{
 Estimated beta coefficients for covariates
+
+Estimated beta coefficients for covariates
 }
 \description{
 Fit a linear logistic regression model with only selected adjusting covariates
 }
 \details{
+Beta coefficients are employed for the estimation of lambda max
+
 Beta coefficients are employed for the estimation of lambda max
 }
 \author{
