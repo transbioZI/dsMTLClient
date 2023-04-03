@@ -7,11 +7,12 @@ dsMTL (Federated Multi-Task Learning based on DataSHIELD) provided federated, pr
 <img src="inst/overview.png" style="width: 70%; height: 70%"/>​
 </p>
 
-dsMTL currently includes three supervised and one unsupervised federated multi-task learning as well as one federated machine learning algorithms. Each algorithm captured a specific form of cross-cohort heterogeneity, which was linked to different applications in molecular studies.
+dsMTL currently includes three supervised and one unsupervised federated multi-task learning as well as two federated machine learning algorithms. Each algorithm captured a specific form of cross-cohort heterogeneity, which was linked to different applications in molecular studies.
 
 | Name  | Type | Task | Effect |
 | --- | --- | --- | --- |
 | `dsLasso`  | ML | Classification/Regression | Train a Lasso model on the conbained cohorts |
+| `dsLassoCov`  | ML | Classification/Regression | Federated ML can capture the covariate effect |
 | `dsMTL_L21`  | MTL | Classification/Regression | Screen out unimportant features to all tasks |
 | `dsMTL_trace`  | MTL | Classification/Regression | Identify models represented in low-dimentional spcae |
 | `dsMTL_net`  | MTL | Classification/Regression | Incorporate task-relatedness described as a graph |
@@ -39,6 +40,8 @@ dsMTL server-side package has been pre-installed in the [opal demo server](https
 
 The testing files were [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/opal-demo). Please download the file for each algorithm and run line by line.
 
+### Run using DSLite
+DSLite is a R package allowing the simulation of DataSHIELD servers environment on a single machine. We provided tests files for every algorithm running with DSLite. The files are located [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/DSLite)
 
 ### Run using own servers
 1. Install two DataSHIELD servers and dsMTL server-side package. Please find the tutorial in the server-side repositary [dsMTLBase](https://github.com/transbioZI/dsMTLBase). 
