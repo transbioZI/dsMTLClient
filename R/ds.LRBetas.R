@@ -36,11 +36,11 @@
 #' @param covar Positions of adjusting covariates in the X dataset
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
-#' @export  
 #' @param datasources The connections of servers
 #' 
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
+#' @importFrom dsBaseClient ds.make ds.dataFrameSubset ds.cbind ds.names ds.glm
 #' 
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################

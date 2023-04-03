@@ -1,7 +1,7 @@
 Package: dsMTLClient
 Type: Package
 Title: dsMTL client side functions 
-Version: 0.99
+Version: 0.9.9
 Date: 2021-07-01
 Author: Han Cao, Youcheng Zhang, Carl Herrmann and Emanuel Schwarz
 Authors@R: 
@@ -28,13 +28,13 @@ ManyThanks: Augusto Anguita (augusto.anguita@isglobal.org) contributed to the im
 Depends:
     R (>= 4.1.0),
     DSI (>= 1.4.0)
+    dsBaseClient (>= 6.1.1)
 Imports:
     corpcor,
     opalr,
     readr,
     stats,
     resourcer,
-    dsBaseClient
 Encoding: UTF-8
 LazyData: true
 License: GPL-3

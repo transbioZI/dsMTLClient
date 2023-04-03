@@ -21,7 +21,7 @@ ds.LassoCov_Train(
 \arguments{
 \item{X}{The design matrices of multiple cohorts}
 
-\item{Y}{Label vectors of multiple cohorts}
+\item{Y}{Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)}
 
 \item{type}{regression(=regress) or classification(=classify)}
 
