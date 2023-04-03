@@ -318,8 +318,6 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, covar=NULL, 
 			opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
 
-if(type=="binary")warning("Please, note that the dsLassoCov version for a classification problem has not been properly tested and checked. Therefore, we advise you not to use this functionality until the next release of the package.")
-
   #intercept model
   if (intercept){
     Xnew=paste0(X, ".intercept")
