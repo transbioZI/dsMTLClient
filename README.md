@@ -12,7 +12,7 @@ dsMTL currently includes three supervised and one unsupervised federated multi-t
 | Name  | Type | Task | Effect |
 | --- | --- | --- | --- |
 | `dsLasso`  | ML | Classification/Regression | Train a Lasso model on the conbained cohorts |
-| `dsLassoCov`  | ML | Classification/Regression | Federated ML can capture the covariate effect |
+| `dsLassoCov`  | ML | Classification/Regression | Federated ML model that can capture the covariate effect |
 | `dsMTL_L21`  | MTL | Classification/Regression | Screen out unimportant features to all tasks |
 | `dsMTL_trace`  | MTL | Classification/Regression | Identify models represented in low-dimentional spcae |
 | `dsMTL_net`  | MTL | Classification/Regression | Incorporate task-relatedness described as a graph |
