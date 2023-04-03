@@ -9,7 +9,7 @@ ds.LS_LassoCov(X, Y, lam, covar = NULL, opts, datasources, nDigits)
 \arguments{
 \item{X}{The design matrices of multiple cohorts}
 
-\item{Y}{Label vectors of multiple cohorts}
+\item{Y}{Label vectors of multiple cohorts (in case of a binary outcome classes must to be coded as -1 and 1)}
 
 \item{lam}{The hyper-parameter controlling the sparsity}
 

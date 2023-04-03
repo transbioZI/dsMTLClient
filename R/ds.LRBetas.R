@@ -36,6 +36,7 @@
 #' @param covar Positions of adjusting covariates in the X dataset
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
+#' @importFrom dsBaseClient ds.make ds.dataFrameSubset ds.asFactor ds.cbind ds.names ds.glm
 #' @export  
 #' @param datasources The connections of servers
 #' 
@@ -55,17 +56,17 @@ ds.LRBetas= function(X,Y,covar, datasources){
                      datasources = datasources) 
     
   #Coerce outcome to numeric in the server side 
-  ds.asFactor(input.var.name = Y, newobj = 'Y_lr', datasources = datasources)
+  ds.asFactor(input.var.name = Y, newobj.name = 'Y_lr', datasources = datasources)
   
   #Bind both objects into a new object in the server side
-  ds.cbind(x = c('Y_lr', 'X_lr'), newobj = 'data_LR',datasources = conns) 
+  ds.cbind(x = c('Y_lr', 'X_lr'), newobj = 'data_LR',datasources = datasources) 
   
   #Define linear model formula
   formula  = paste(paste(c(ds.names('data_LR')[[1]][1],'~'),collapse=''),
   	     paste(ds.names('data_LR')[[1]][-1],collapse='+'),collapse='') 
   
   #Run linear model for covariates only
-  mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = conns) 
+  mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = datasources) 
   dsBaseClient::ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
