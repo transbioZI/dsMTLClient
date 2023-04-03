@@ -347,34 +347,24 @@ if(type=="binary")warning("Please, note that the dsLassoCov version for a classi
   #########################
   if (type=="regress"){
   
-  #----------Modifications for covariates adjustment 
-  if (!is.null(covar)) {
-  if (any(covar > nFeats) | any(covar < 1)) { 
-  print("Error: Covariate index out of the dimensions of the input.") 
-  break;
-  }
+    #----------Modifications for covariates adjustment 
+    if (!is.null(covar)) {
+      if (any(covar > nFeats) | any(covar < 1)) { 
+        print("Error: Covariate index out of the dimensions of the input.") 
+        break;
+      }
   
-  ## Fit linear model for Y and covars, and extract beta coefficients 
-  betaCov=ds.lmBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
-    
-  betaCov_=paste0(as.character(betaCov), collapse=",")
-  covar_=paste0(as.character(covar),collapse=",")    
+      ## Fit linear model for Y and covars, and extract beta coefficients 
+      betaCov=ds.lmBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
+      betaCov_=paste0(as.character(betaCov), collapse=",")
+      covar_=paste0(as.character(covar),collapse=",")    
   
-  cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_ , type=type)
-  xys=DSI::datashield.aggregate(datasources, cally)
-  xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
-  max_xy_norm=max(xys[setdiff(seq(nFeats),covar)])
-    
-      
-  } else {  
-  
-  xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
-  xys=rowSums(do.call(cbind, xys))/sum(nSubs)
-  max_xy_norm=max(abs(xys))
-  
-  }
-  #~~~~~~~~~~~~~  
-    
+      cally <- call("xtycovDS",x=X, y=Y, covar=covar_, betaCov=betaCov_ , type=type)
+      xys=DSI::datashield.aggregate(datasources, cally)
+      xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
+      max_xy_norm=max(xys[setdiff(seq(nFeats),covar)])
+    } 
+
     #estimate lambda sequence
     if(length(lambda)>1){
       lam_seq=lambda
@@ -412,16 +402,15 @@ if(type=="binary")warning("Please, note that the dsLassoCov version for a classi
   break;
   }
   
-  ## Fit linear model for Y and covars, and extract beta coefficients 
-  betaCov=ds.LRBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
+      ## Fit linear model for Y and covars, and extract beta coefficients 
+      betaCov=ds.LRBetas(X=X,Y=Y,covar=covar, datasources=datasources) 
+      betaCov_=paste0(as.character(betaCov), collapse=",")
+      covar_=paste0(as.character(covar),collapse=",")    
   
-  betaCov_=paste0(as.character(betaCov), collapse=",")
-  covar_=paste0(as.character(covar),collapse=",")    
-  
-  cally <- call("xtycovDS",X , Y, covar=covar_, betaCov=betaCov_, type=type)
-  xys=DSI::datashield.aggregate(datasources, cally)
-  xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
-  max_xy_norm=max(xys[setdiff(seq(nFeats),covar)])
+      cally <- call("xtycovDS", x=X , y=Y, covar=covar_, betaCov=betaCov_, type=type)
+      xys=DSI::datashield.aggregate(datasources, cally)
+      xys=rowSums(do.call(cbind, xys))/sum(nSubs)/penfactor
+      max_xy_norm=max(xys[setdiff(seq(nFeats),covar)])
     
       
   } else {  
@@ -429,19 +418,19 @@ if(type=="binary")warning("Please, note that the dsLassoCov version for a classi
   xys=DSI::datashield.aggregate(datasources, call("xtyDS",X, Y ))
   xys=rowSums(do.call(cbind, xys))/sum(nSubs)
   max_xy_norm=max(abs(xys))
-  
-  }
-  #~~~~~~~~~~~~~    
+
+    } 
+    #~~~~~~~~~~~~~    
   
     #estimate lambda sequence
     if(length(lambda)>1){
       lam_seq=lambda
     } else if(length(lambda)==1){
-      lam_max=max(max_xy_norm/2)
+      lam_max=max(max_xy_norm)
       lam_min=lambda
       lam_seq=exp(seq(log(lam_max),log(lam_min),length.out = nlambda))
     } else if(is.null(lambda)){
-      lam_max=max(max_xy_norm/2)
+      lam_max=max(max_xy_norm)
       lam_min=lam_ratio*lam_max
       lam_seq=exp(seq(log(lam_max),log(lam_min),length.out = nlambda))
     }

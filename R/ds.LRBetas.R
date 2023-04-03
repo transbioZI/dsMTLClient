@@ -49,24 +49,6 @@
 ds.LRBetas= function(X,Y,covar, datasources){
 
   #Create a vector of ones in the server side
-  ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
-  
-  #Subset only columns corresponding to covariates from the X dataset
-  ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lr',  
-                     datasources = datasources) 
-    
-  #Coerce outcome to numeric in the server side 
-  ds.asFactor(input.var.name = Y, newobj.name = 'Y_lr', datasources = datasources)
-  
-  #Bind both objects into a new object in the server side
-  ds.cbind(x = c('Y_lr', 'X_lr'), newobj = 'data_LR',datasources = datasources) 
-  
-  #Define linear model formula
-  formula  = paste(paste(c(ds.names('data_LR')[[1]][1],'~'),collapse=''),
-  	     paste(ds.names('data_LR')[[1]][-1],collapse='+'),collapse='') 
-  
-  #Run linear model for covariates only
-  mod = ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = datasources) 
   dsBaseClient::ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
   
   #Subset only columns corresponding to covariates from the X dataset
@@ -80,14 +62,13 @@ ds.LRBetas= function(X,Y,covar, datasources){
   dsBaseClient::ds.cbind(x = c('Y_lr', 'X_lr'), newobj = 'data_LR',datasources = datasources) 
   
   #Define linear model formula
-  formula  = paste(paste(c(dsBaseClient::ds.names('data_LR')[[1]][1],'~'),collapse=''),
-  	     paste(dsBaseClient::ds.names('data_LR')[[1]][-1],collapse='+'),collapse='') 
+  formula  = paste0('Y_lr~', paste(dsBaseClient::ds.names('data_LR', datasources = datasources)[[1]][-1],collapse='+'), "-1") 
   
   #Run linear model for covariates only
   mod = dsBaseClient::ds.glm(formula = formula,data = 'data_LR',family = 'binomial', datasources = datasources) 
   
   #Extract estimated coefficients
-  betaCov = mod$coefficients[-1,1] 
+  betaCov = mod$coefficients[,1] 
   
   return(betaCov)
   

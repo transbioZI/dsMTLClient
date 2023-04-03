@@ -40,24 +40,6 @@
 
 ds.lmBetas= function(X,Y,covar, datasources){
   #Create a vector of ones in the server side
-  ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
-
-  #Subset only columns corresponding to covariates from the X dataset
-  ds.dataFrameSubset(df.name = X,  V1.name = 'ONES',  V2.name = 'ONES',  Boolean.operator = '==', keep.cols = covar, newobj = 'X_lm',  
-                     datasources = datasources) 
-  
-  #Coerce outcome to numeric in the server side 
-  ds.asNumeric(x.name = Y, newobj = 'Y_lm', datasources = datasources)
-  
-  #Bind both objects into a new object in the server side
-  ds.cbind(x = c('Y_lm', 'X_lm'), newobj = 'data_lm',datasources = datasources)
-  
-  #Define linear model formula
-  formula  = paste(paste(c(ds.names('data_lm', datasources = datasources)[[1]][1],'~'),collapse=''),
-                   paste(ds.names('data_lm', datasources = datasources)[[1]][-1],collapse='+'),collapse='') 
-  
-  #Run linear model for covariates only
-  mod = ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
   dsBaseClient::ds.make(toAssign = paste0('1', '+', Y, '-', Y),newobj = 'ONES',datasources = datasources)
 
   #Subset only columns corresponding to covariates from the X dataset
@@ -71,13 +53,12 @@ ds.lmBetas= function(X,Y,covar, datasources){
   dsBaseClient::ds.cbind(x = c('Y_lm', 'X_lm'), newobj = 'data_lm',datasources = datasources)
   
   #Define linear model formula
-  formula  = paste(paste(c(dsBaseClient::ds.names('data_lm', datasources = datasources)[[1]][1],'~'),collapse=''),
-                   paste(dsBaseClient::ds.names('data_lm', datasources = datasources)[[1]][-1],collapse='+'),collapse='') 
+  formula  = paste0('Y_lm~', paste(dsBaseClient::ds.names('data_lm', datasources = datasources)[[1]][-1],collapse='+'),"-1") 
   
   #Run linear model for covariates only
   mod = dsBaseClient::ds.glm(formula = formula,data = 'data_lm',family = 'gaussian', datasources = datasources) 
 
-  betaCov = mod$coefficients[-1,1] #Extract estimated coefficients
+  betaCov = mod$coefficients[,1] #Extract estimated coefficients
   
   return(betaCov)
   
