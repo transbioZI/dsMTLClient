@@ -38,10 +38,10 @@
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of Federated NMF
-
+#' 
 #' @import DSI
 #' @export  
 #' @author Han Cao
@@ -147,10 +147,11 @@ ds.solveINMF=function(datasources, Xs, newH, rank=2, lam=1, Sp=1, opts=list(maxI
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Training models of dsMTL_iNMF
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

@@ -34,10 +34,10 @@
 #' @param Y The name of labels   
 #' @param datasourceTest  The connection of the target server
 #' @param average The indicator to average or not the prediction probability over all coefficient vectors
-
+#' 
 #' @return The MSE of each coefficient vector (or averaged MSE)
 #' @details Calculate mean-squared error (MSE) on the target server
-
+#' 
 #' @import DSI
 #' @export  
 #' @author Han Cao

@@ -2,7 +2,6 @@ library(opalr)
 library(readr)
 
 o <- opal.login('administrator','password', url='https://opal-demo.obiba.org')
-# o <- opal.login('administrator','datashield_test&', url='https://192.168.56.100:8443', opts = list(ssl_verifyhost=0, ssl_verifypeer=0))
 
 # create dsMTL_Server1 project
 opal.project_delete(o, "dsMTL_Server1")

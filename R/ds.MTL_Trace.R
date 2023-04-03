@@ -37,11 +37,12 @@
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of FeMTL with least-square loss and low-rank structure
-
+#' 
 #' @import DSI
+#' @import corpcor
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -187,10 +188,12 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of FeMTL with logistic loss and low-rank structure
-
+#' 
+#' @import DSI
+#' @import corpcor
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -341,10 +344,11 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The regularization tree
 #' @details Training a regularization tree for dsMTL_Trace
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -459,10 +463,11 @@ ds.MTL_Trace_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ra
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The result of cross-validation
 #' @details Cross-site cross-validation for dsMTL_Trace
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -533,10 +538,11 @@ ds.MTL_Trace_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.1,
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The result of cross-validation
 #' @details In-site cross-validation for dsMTL_Trace
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

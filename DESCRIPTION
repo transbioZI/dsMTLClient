@@ -23,18 +23,14 @@ Authors@R:
              role="ths",
              email="emanuel.schwarz@zi-mannheim.de"))
 Maintainer: Han Cao <hank9cao@gmail.com>
-Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD dsBase.
+Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD.
 ManyThanks: Augusto Anguita (augusto.anguita@isglobal.org) contributed to the implementation of dsLassoCov
 Depends:
     R (>= 4.1.0),
     DSI (>= 1.4.0),
     dsBaseClient (>= 6.2.0)
 Imports:
-    corpcor,
-    opalr,
-    readr,
-    stats,
-    resourcer
+    corpcor
 Encoding: UTF-8
 LazyData: true
 License: GPL-3

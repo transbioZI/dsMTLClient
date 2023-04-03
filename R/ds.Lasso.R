@@ -167,10 +167,11 @@ ds.LS_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of logistic regression with Lasso
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -290,10 +291,11 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The regularization tree
 #' @details Training a regularization tree with Lasso
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -396,10 +398,11 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The result of cross-validation
 #' @details Cross-site cross-validation
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -469,10 +472,11 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The result of cross-validation
 #' @details Cross-site cross-validation
-
+#' 
+#' @import DSI
 #' @export  
 #' @author Han Cao
 ################################################################################

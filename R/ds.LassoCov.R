@@ -34,10 +34,11 @@
 #' @param opts Options controlling the optimization procedure     
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of Lasso regression with controlling covariate effect
-
+#' 
+#' @import DSI
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
@@ -168,10 +169,11 @@ ds.LS_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @param opts Options controlling the optimization procedure  
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
-
+#' 
 #' @return The converged result of optimization
 #' @details Solver of logistic regression with Lasso
-
+#' 
+#' @import DSI
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
@@ -307,10 +309,11 @@ ds.LR_LassoCov <- function (X, Y, lam, covar=NULL, opts, datasources, nDigits){
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The regularization tree
 #' @details Training a regularization tree with Lasso
-
+#' 
+#' @import DSI
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
@@ -465,10 +468,11 @@ ds.LassoCov_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_rat
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' @param intercept Use intercept(=TRUE) or non-intercept(=FALSE) model 
-
+#' 
 #' @return The result of cross-validation
 #' @details Cross-site cross-validation
-
+#' 
+#' @import DSI
 #' @export  
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################

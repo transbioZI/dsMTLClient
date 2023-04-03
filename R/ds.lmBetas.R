@@ -27,10 +27,12 @@
 ################################################################################
 #' @title Fit a linear regression model on selected covariates
 #' @description Fit a linear regression model with only selected adjusting covariates
+#' 
 #' @param X Predictors
 #' @param Y Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
 #' @param datasources The connections of servers
+#' 
 #' @return Estimated beta coefficients for covariates
 #' @importFrom dsBaseClient ds.make ds.dataFrameSubset ds.asFactor ds.cbind ds.names ds.glm
 #' @details Beta coefficients are employed for the estimation of lambda max

@@ -31,6 +31,7 @@
 ################################################################################
 #' @title Fit a logistic regression model on selected covariates
 #' @description Fit a linear logistic regression model with only selected adjusting covariates
+#' 
 #' @param X Predictors
 #' @param Y Binary-Outcome
 #' @param covar Positions of adjusting covariates in the X dataset
@@ -41,7 +42,6 @@
 #' @return Estimated beta coefficients for covariates
 #' @details Beta coefficients are employed for the estimation of lambda max
 #' @importFrom dsBaseClient ds.make ds.dataFrameSubset ds.cbind ds.names ds.glm
-#' 
 #' @author  Han Cao & Augusto Anguita-Ruiz
 ################################################################################
 

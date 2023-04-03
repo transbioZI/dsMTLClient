@@ -33,13 +33,13 @@
 #' @param myServerKey The identify of the access. myServerKey$server contained a valid server connection. myServerKey$key contained a valid key.
 #' @param data  The name of the target matrix on the server
 #' @param symbol  The name of the new variable
-
+#' 
 #' @return The requested matrix or error message 
 #' @details The "Datakey" mechanism allowed the valid client upload the data matrix directly into the memory of the server. The validity 
 #' was granted by the server administrator. To achieve this, the administrator generated a key and put the local copy in the dataset 
 #' serverDataKey.myKey(project: serverDataKey; table: myKey) where the dataset was created normaly using DataSHIELD. The remote ropy
 #' of the key was hand over to the trustworthy analyst. This was determined by the server administrator 
-
+#' 
 #' @import DSI
 #' @export  
 #' @author Han Cao
