@@ -27,8 +27,8 @@ Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD dsBase.
 ManyThanks: Augusto Anguita (augusto.anguita@isglobal.org) contributed to the implementation of dsLassoCov
 Depends:
     R (>= 4.1.0),
-    DSI (>= 1.4.0)
-    dsBaseClient (>= 6.1.1)
+    DSI (>= 1.4.0),
+    dsBaseClient (>= 6.2.0)
 Imports:
     corpcor,
     opalr,
