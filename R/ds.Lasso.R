@@ -296,11 +296,13 @@ ds.LR_Lasso <- function (X, Y, lam, C, opts, datasources, nDigits){
 #' @details Training a regularization tree with Lasso
 #' 
 #' @import DSI
+#' @importFrom cli cli_alert_info
 #' @export  
 #' @author Han Cao
 ################################################################################
 ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=0.01, lambda=NULL, C=0, 
-                       opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, intercept=F){
+                       opts=list(init=0, maxIter=20, tol=0.01, ter=2), datasources=NULL, nDigits=10, 
+                       intercept=F, fold_n = NULL, fold_tot = NULL){
   
   #intercept model
   if (intercept){
@@ -339,6 +341,8 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     #warm-start training procedure
     optsTrain=opts
     for(i in 1:length(lam_seq)){
+      cli_alert_info(sprintf("Testing lamda %s of %s, fold %s of %s", i, length(lam_seq), fold_n, fold_tot))
+      
       m=ds.LS_Lasso(X=X, Y=Y, lam=lam_seq[i], C=C, opts=optsTrain, datasources=datasources, nDigits=nDigits)
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
@@ -365,6 +369,7 @@ ds.Lasso_Train = function(X=NULL, Y=NULL, type="regress", nlambda=10, lam_ratio=
     #warm-start training procedure
     optsTrain=opts
     for(i in 1:length(lam_seq)){
+      cli_alert_info(sprintf("Testing lamda %s of %s, fold %s of %s", i, length(lam_seq), fold_n, fold_tot))
       m=ds.LR_Lasso(X=X, Y=Y, lam=lam_seq[i], C=C, opts=optsTrain, datasources=datasources, nDigits=nDigits)
       optsTrain$w0=m$w; optsTrain$init=1
       fit$ws=cbind(fit$ws,m$w)
@@ -477,6 +482,7 @@ ds.Lasso_CVCroSite = function(X=NULL, Y=NULL, type="regress", lam_ratio=0.01, nl
 #' @details Cross-site cross-validation
 #' 
 #' @import DSI
+#' @importFrom cli cli_alert_info
 #' @export  
 #' @author Han Cao
 ################################################################################
@@ -527,13 +533,18 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
     mse_fold=vector()
     lam_seq=vector()
     for (i in 1:length(cvPar)){
+      cli_alert_info(sprintf("Making fold number %s", i))
+      
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTrain, newSymbol="Xtrain", symbol=X)
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTrain, newSymbol="Ytrain", symbol=Y)
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Xtest", symbol=X)
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Ytest", symbol=Y)
       
       fit=ds.Lasso_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="regress", opts=opts, C=C, lambda=lambda, 
-                         datasources=datasources, nDigits=nDigits)
+                         datasources=datasources, nDigits=nDigits, fold_n = i, fold_tot = length(cvPar))
+      
+      cli_alert_info("Calculating missing classification rate")
+      
       mse_task=sapply(1:nTasks, function(x) {
         mse=ds.calcMSE(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", average=F)
         mse=mse[[1]]*nSubs[x]/sum(nSubs)
@@ -549,6 +560,7 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
     mcr_fold=vector()
     lam_seq=vector()
     for (i in 1:length(cvPar)){
+      cli_alert_info(sprintf("Making fold number %s", i))
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTrain, newSymbol="Xtrain", symbol=X)
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTrain, newSymbol="Ytrain", symbol=Y)
       ds.subsetSubjests(datasources, idx=cvPar[[i]]$cvTest, newSymbol="Xtest", symbol=X)
@@ -556,6 +568,9 @@ ds.Lasso_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_rati
 
       fit=ds.Lasso_Train(X="Xtrain", Y="Ytrain", nlambda=nlambda, lam_ratio=lam_ratio, type="classify", opts=opts, C=C, lambda=lambda, 
                          datasources=datasources, nDigits=nDigits)
+
+      cli_alert_info("Calculating missing classification rate")
+      
       mcr_task=sapply(1:nTasks, function(x) {
         mcr=ds.calcMCR(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", average=F)
         mcr=mcr[[1]]*nSubs[x]/sum(nSubs)
