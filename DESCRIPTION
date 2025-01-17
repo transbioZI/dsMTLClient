@@ -3,7 +3,7 @@ Type: Package
 Title: dsMTL client side functions 
 Version: 0.9.9
 Date: 2021-07-01
-Author: Han Cao, Youcheng Zhang, Carl Herrmann and Emanuel Schwarz
+Author: Han Cao, Youcheng Zhang, Roman Schefzik, Carl Herrmann and Emanuel Schwarz
 Authors@R: 
     c(person(given = "Han",
              family = "Cao",
@@ -14,6 +14,10 @@ Authors@R:
              family = "Zhang",
              role="com",
              email="Youcheng.zhang@bioquant.uni-heidelberg.de"), 
+      person(given = "Roman",
+             family = "Schefzik",
+             role="ctb",
+             email="roman.schefzik@zi-mannheim.de"),
       person(given = "Carl",
              family = "Herrmann",
              role="ths",
@@ -24,7 +28,7 @@ Authors@R:
              email="emanuel.schwarz@zi-mannheim.de"))
 Maintainer: Han Cao <hank9cao@gmail.com>
 Description: dsMTL - Federated Multi-Task Learning based on DataSHIELD.
-ManyThanks: Augusto Anguita (augusto.anguita@isglobal.org) contributed to the implementation of dsLassoCov
+ManyThanks: Augusto Anguita (augusto.anguita@isglobal.org) contributed to the implementation of dsLassoCov. Xavier Escriba-Montagut and Juan R. Gonzalez contributed to the implementation of the differential privacy concept.
 Depends:
     R (>= 4.1.0),
     DSI (>= 1.4.0),
@@ -34,4 +38,4 @@ Imports:
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3

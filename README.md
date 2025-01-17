@@ -51,6 +51,16 @@ DSLite is a R package allowing the simulation of DataSHIELD servers environment 
 
 
 
+> [!NOTE]
+> In addition to the original architecture for federated MTL approaches as presented in the initial publication (Cao et al., 2022) and described above, which supports the analysis of sensitive individual-level data from geographically distributed data sources using the DataSHIELD platform, the concept of differential privacy has been included into the dsMTL package in 2025. This optional feature offers an additional security mechanism that is specific to the MTL models. In particular, differential privacy can provide a protection against so-called membership inference attacks to the models. Instructions on how to set up the optional differential privacy feature are given in the annotations of the corresponding MTL functions, and code with examples in this context can be found [here](https://github.com/transbioZI/dsMTLClient/tree/main/tests/DSLite/test_dsMTL_DiffPriv.R).  
+
+
+
+
+## References
+
+Cao, H., Zhang, Y., Baumbach, J., Burton, P. R., Dwyer, D., Koutsouleris, N., Matschinske, J., Marcon, Y., Rajan, S., Rieg, T., Ryser-Welch, P., Späth, J., The COMMITMENT Consortium, Herrmann, C., and Schwarz, E. (2022). dsMTL: a computational framework for privacy-preserving, distributed multi-task machine learning. Bioinformatics, 38(21), 4919-4926. DOI: 10.1093/bioinformatics/btac616
+
 
 ## Contact
 

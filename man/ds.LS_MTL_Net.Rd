@@ -4,7 +4,17 @@
 \alias{ds.LS_MTL_Net}
 \title{Solver of FeMTL with least-square loss and network incorporation}
 \usage{
-ds.LS_MTL_Net(X, Y, lam, C, G, opts, datasources = NULL, nDigits)
+ds.LS_MTL_Net(
+  X,
+  Y,
+  lam,
+  C,
+  G,
+  opts = list(init = 0, w0 = NULL, tol = 0.01, maxIter = 50, ter = 2, diffPrivEpsilon =
+    NULL, nRunsSensitAn = 100),
+  datasources = NULL,
+  nDigits
+)
 }
 \arguments{
 \item{X}{The design matrices of multiple cohorts}
@@ -17,7 +27,7 @@ ds.LS_MTL_Net(X, Y, lam, C, G, opts, datasources = NULL, nDigits)
 
 \item{G}{The graph described the task relatedness}
 
-\item{opts}{Options controlling the optimization procedure}
+\item{opts}{A list of options controlling the optimization procedure and specifying the differential privacy component. See Details.}
 
 \item{datasources}{The connections of servers}
 
@@ -30,8 +40,17 @@ The converged result of optimization
 Solver of FeMTL with least-square loss and network incorporation
 }
 \details{
-Solver of FeMTL with least-square loss and network incorporation
+Solver of FeMTL with least-square loss and network incorporation.  \cr A list of options controlling the optimization procedure and specifying the differential privacy component based on a privacy parameter epsilon>0 can be provided via the \code{opts} argument:
+\itemize{
+\item{\code{init} \cr A value (0 or 1) specifying the starting point of the involved gradient descent algorithm. Specifically, two options are provided: A value of 0 (default) uses the 0 matrix as starting point, while a value of 1 uses a starting point specified by the user. If applicable (i.e., \code{init=1}), the user-defined starting point (matrix) has to be specified via the \code{w0} argument in \code{opts}.}
+\item{\code{w0} \cr A user-defined starting point (matrix) for the involved gradient descent algorithm, in case \code{init=1} is specified (otherwise, for \code{init=0}, the value is set to NULL, the default).}
+\item{\code{tol} \cr A value >0 specifying the tolerance of the acceptable precision of solution to terminate the algorithm. Default value is set to 0.01.}
+\item{\code{maxIter} \cr A value >0 specifying the maximum number of iterations. Default value is set to 50.}
+\item{\code{ter} \cr A value (1, 2 or 3) specifying one out of three termination rules to determine whether the optimization converges. The first rule (\code{ter=1}) checks whether the current objective value is close enough to 0. The second rule (\code{ter=2}) considers the last two objective values and checks whether the decrement is close enough to 0 (default). The third rule (\code{ter=3}) allows the optimization to be performed for a certain maximum number of iterations (\code{maxIter}).}
+\item{\code{diffPrivEpsilon} \cr A value >0 serving as a privacy parameter to control the degree of differential privacy. Setting the value to NULL (default) means that no differential privacy is included.}
+\item{\code{nRunsSensitAn} \cr A value >0 specifying the number of simulation runs for the respective sensitivity analyses in case a differential privacy component is included. Default value is set to 100 (only effective if a corresponding value for \code{diffPrivEpsilon} is provided; otherwise, no differential privacy is included).}
+}
 }
 \author{
-Han Cao
+Han Cao, Roman Schefzik
 }

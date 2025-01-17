@@ -34,20 +34,29 @@
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
 #' @param C   The hyper-parameter associated with L2 term
-#' @param opts Options controlling the optimization procedure     
+#' @param opts A list of options controlling the optimization procedure and specifying the differential privacy component. See Details.   
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' 
 #' @return The converged result of optimization
-#' @details Solver of FeMTL with least-square loss and low-rank structure
+#' @details Solver of FeMTL with least-square loss and low-rank structure.  \cr A list of options controlling the optimization procedure and specifying the differential privacy component based on a privacy parameter epsilon>0 can be provided via the \code{opts} argument:
+#' \itemize{
+#' \item{\code{init} \cr A value (0 or 1) specifying the starting point of the involved gradient descent algorithm. Specifically, two options are provided: A value of 0 (default) uses the 0 matrix as starting point, while a value of 1 uses a starting point specified by the user. If applicable (i.e., \code{init=1}), the user-defined starting point (matrix) has to be specified via the \code{w0} argument in \code{opts}.}
+#' \item{\code{w0} \cr A user-defined starting point (matrix) for the involved gradient descent algorithm, in case \code{init=1} is specified (otherwise, for \code{init=0}, the value is set to NULL, the default).}
+#' \item{\code{tol} \cr A value >0 specifying the tolerance of the acceptable precision of solution to terminate the algorithm. Default value is set to 0.01.}
+#' \item{\code{maxIter} \cr A value >0 specifying the maximum number of iterations. Default value is set to 50.}
+#' \item{\code{ter} \cr A value (1, 2 or 3) specifying one out of three termination rules to determine whether the optimization converges. The first rule (\code{ter=1}) checks whether the current objective value is close enough to 0. The second rule (\code{ter=2}) considers the last two objective values and checks whether the decrement is close enough to 0 (default). The third rule (\code{ter=3}) allows the optimization to be performed for a certain maximum number of iterations (\code{maxIter}).}
+#' \item{\code{diffPrivEpsilon} \cr A value >0 serving as a privacy parameter to control the degree of differential privacy. Setting the value to NULL (default) means that no differential privacy is included.}
+#' \item{\code{nRunsSensitAn} \cr A value >0 specifying the number of simulation runs for the respective sensitivity analyses in case a differential privacy component is included. Default value is set to 100 (only effective if a corresponding value for \code{diffPrivEpsilon} is provided; otherwise, no differential privacy is included).}
+#' }
 #' 
 #' @import DSI
 #' @import corpcor
 #' @export  
-#' @author Han Cao
+#' @author Han Cao, Roman Schefzik
 ################################################################################
 
-ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
+ds.LS_MTL_Trace <- function (X, Y, lam, C, opts=list(init=0,w0=NULL,tol=0.01,maxIter=50,ter=2,diffPrivEpsilon=NULL,nRunsSensitAn=100), datasources=NULL, nDigits){
   proximal_Trace <- function (W, lambda ){
     #prox_f(x)=(1-lam/(max{||x||, lam}))x
     eigen <- corpcor::fast.svd(W)
@@ -75,12 +84,58 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
     })
     names(callys)=names(datasources)
     iter_update=DSI::datashield.aggregate(datasources, callys)  
+    
     grad_w=sapply(iter_update, function(x)x[[1]]); 
     funcVal=sapply(iter_update, function(x)x[[2]]); 
     
     grad_Ws=grad_w + 2* C * W
     funcVals=sum(funcVal) + C * norm(W, 'f')^2
-    return(list(grad_Ws, funcVals))
+    
+    if(is.null(opts$diffPrivEpsilon)==FALSE){
+      
+      ##sensitivity analyses (multiple runs)
+      grad_Ws_sensit<-list()
+      funcVals_sensit<-list()
+      nSimulations<-opts$nRunsSensitAn
+      
+      for(n in 1:nSimulations){
+        
+        callys.sensit=lapply(1:nTasks, function(k){ 
+          W.text=paste0(as.character(W[,k]), collapse=",")
+          cally.sensit <- call('LS_simulateDifferencesDS', W.text, X, Y)
+          return(cally.sensit)
+        })
+        names(callys.sensit)=names(datasources)
+        iter_update_sensit=DSI::datashield.aggregate(datasources, callys.sensit)  
+        
+        grad_w_sensit=sapply(iter_update_sensit, function(x)x[[1]]); 
+        funcVal_sensit=sapply(iter_update_sensit, function(x)x[[2]]); 
+        
+        grad_Ws_sensit[[n]]=grad_w_sensit + 2* C * W
+        funcVals_sensit[[n]]=sum(funcVal_sensit) + C * norm(W, 'f')^2
+      }
+      
+      ##compute differences original-removed
+      gradWsDifferences<-list()
+      for(i in 1:nSimulations){
+        gradWsDifferences[[i]] <- abs(grad_Ws - grad_Ws_sensit[[i]])
+      }
+      
+      ##find maximum differences over the multiple runs
+      maxGradWsDifference <- do.call(pmax, c(gradWsDifferences, na.rm = TRUE))
+      
+      ##apply differential privacy
+      grad_Ws_New <- differential_privacy(
+        list(
+          og_value = grad_Ws,
+          l1_sens = maxGradWsDifference
+        ),
+        opts$diffPrivEpsilon
+      )
+      
+    }else{grad_Ws_New <-grad_Ws}
+    
+    return(list(grad_Ws=grad_Ws_New, funcVals=funcVals))
   }
   
   LS_funcVal_eval_tasks <- function ( W){
@@ -92,7 +147,54 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
     }) 
     names(callys)=names(datasources)
     func=DSI::datashield.aggregate(datasources, callys)  
-    return(sum(unlist(func)) + C * norm(W, 'f')^2)
+    
+    funcVal<-sum(unlist(func)) + C * norm(W, 'f')^2
+    
+    if(is.null(opts$diffPrivEpsilon)==FALSE){
+      
+      ##sensitivity analyses (multiple runs)
+      grad_Ws_sensit<-list()
+      funcVals_sensit<-list()
+      nSimulations<-opts$nRunsSensitAn
+      
+      for(n in 1:nSimulations){
+        
+        callys.sensit=lapply(1:nTasks, function(k){ 
+          W.text=paste0(as.character(W[,k]), collapse=",")
+          cally.sensit <- call('LS_simulateDifferencesDS', W.text, X, Y)
+          return(cally.sensit)
+        })
+        names(callys.sensit)=names(datasources)
+        iter_update_sensit=DSI::datashield.aggregate(datasources, callys.sensit)  
+        
+        grad_w_sensit=sapply(iter_update_sensit, function(x)x[[1]]); 
+        funcVal_sensit=sapply(iter_update_sensit, function(x)x[[2]]); 
+        
+        grad_Ws_sensit[[n]]=grad_w_sensit + 2* C * W
+        funcVals_sensit[[n]]=sum(funcVal_sensit) + C * norm(W, 'f')^2
+      }
+      
+      ##compute differences original-removed
+      differences<-numeric(nSimulations)
+      for(i in 1:nSimulations){
+        differences[[i]] <- abs(funcVal - funcVals_sensit[[i]])
+      }
+      
+      ##find maximum differences over the multiple runs
+      maxDifference <- max(differences)
+      
+      ##apply differential privacy
+      funcValNew <- differential_privacy(
+        list(
+          og_value = funcVal,
+          l1_sens = maxDifference
+        ),
+        opts$diffPrivEpsilon
+      )
+      
+    }else{funcValNew<-funcVal}
+    
+    return(funcValNew)
   }
   
   #################################  
@@ -185,19 +287,28 @@ ds.LS_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
 #' @param Y Label vectors of multiple cohorts
 #' @param lam The hyper-parameter controlling the sparsity   
 #' @param C   The hyper-parameter associated with L2 term
-#' @param opts Options controlling the optimization procedure     
+#' @param opts A list of options controlling the optimization procedure and specifying the differential privacy component. See Details.      
 #' @param datasources The connections of servers   
 #' @param nDigits The number of digits rounded for each number prepared for network transmission 
 #' 
 #' @return The converged result of optimization
-#' @details Solver of FeMTL with logistic loss and low-rank structure
+#' @details Solver of FeMTL with logistic loss and low-rank structure. \cr A list of options controlling the optimization procedure and specifying the differential privacy component based on a privacy parameter epsilon>0 can be provided via the \code{opts} argument:
+#' \itemize{
+#' \item{\code{init} \cr A value (0 or 1) specifying the starting point of the involved gradient descent algorithm. Specifically, two options are provided: A value of 0 (default) uses the 0 matrix as starting point, while a value of 1 uses a starting point specified by the user. If applicable (i.e., \code{init=1}), the user-defined starting point (matrix) has to be specified via the \code{w0} argument in \code{opts}.}
+#' \item{\code{w0} \cr A user-defined starting point (matrix) for the involved gradient descent algorithm, in case \code{init=1} is specified (otherwise, for \code{init=0}, the value is set to NULL, the default).}
+#' \item{\code{tol} \cr A value >0 specifying the tolerance of the acceptable precision of solution to terminate the algorithm. Default value is set to 0.01.}
+#' \item{\code{maxIter} \cr A value >0 specifying the maximum number of iterations. Default value is set to 50.}
+#' \item{\code{ter} \cr A value (1, 2 or 3) specifying one out of three termination rules to determine whether the optimization converges. The first rule (\code{ter=1}) checks whether the current objective value is close enough to 0. The second rule (\code{ter=2}) considers the last two objective values and checks whether the decrement is close enough to 0 (default). The third rule (\code{ter=3}) allows the optimization to be performed for a certain maximum number of iterations (\code{maxIter}).}
+#' \item{\code{diffPrivEpsilon} \cr A value >0 serving as a privacy parameter to control the degree of differential privacy. Setting the value to NULL (default) means that no differential privacy is included.}
+#' \item{\code{nRunsSensitAn} \cr A value >0 specifying the number of simulation runs for the respective sensitivity analyses in case a differential privacy component is included. Default value is set to 100 (only effective if a corresponding value for \code{diffPrivEpsilon} is provided; otherwise, no differential privacy is included).}
+#' }
 #' 
 #' @import DSI
 #' @import corpcor
 #' @export  
-#' @author Han Cao
+#' @author Han Cao, Roman Schefzik
 ################################################################################
-ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
+ds.LR_MTL_Trace <- function (X, Y, lam, C, opts=list(init=0,w0=NULL,tol=0.01,maxIter=50,ter=2,diffPrivEpsilon=NULL,nRunsSensitAn=100), datasources=NULL, nDigits){
   #min_W sum_k{log(1+exp(-Y_k*X_k*W_k))} +lam||W||_21 + c||W||^2_2 
   #with starting points: 0 or W_0; Data: X and Y; Hyper-parameters: lam, C
   
@@ -228,12 +339,58 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
     })
     names(callys)=names(datasources)
     iter_update=DSI::datashield.aggregate(datasources, callys)  
+    
     grad_w=sapply(iter_update, function(x)x[[1]]); 
     funcVal=sapply(iter_update, function(x)x[[2]]); 
     
     grad_Ws=grad_w + 2* C * W
     funcVals=sum(funcVal) + C * norm(W, 'f')^2
-    return(list(grad_Ws=grad_Ws, funcVals=funcVals))
+    
+    if(is.null(opts$diffPrivEpsilon)==FALSE){
+      
+      ##sensitivity analyses (multiple runs)
+      grad_Ws_sensit<-list()
+      funcVals_sensit<-list()
+      nSimulations<-opts$nRunsSensitAn
+      
+      for(n in 1:nSimulations){
+        
+        callys.sensit=lapply(1:nTasks, function(k){ 
+          W.text=paste0(as.character(W[,k]), collapse=",")
+          cally.sensit <- call('LR_simulateDifferencesDS', W.text, X, Y)
+          return(cally.sensit)
+        })
+        names(callys.sensit)=names(datasources)
+        iter_update_sensit=DSI::datashield.aggregate(datasources, callys.sensit)  
+        
+        grad_w_sensit=sapply(iter_update_sensit, function(x)x[[1]]); 
+        funcVal_sensit=sapply(iter_update_sensit, function(x)x[[2]]); 
+        
+        grad_Ws_sensit[[n]]=grad_w_sensit + 2* C * W
+        funcVals_sensit[[n]]=sum(funcVal_sensit) + C * norm(W, 'f')^2
+      }
+      
+      ##compute differences original-removed
+      gradWsDifferences<-list()
+      for(i in 1:nSimulations){
+        gradWsDifferences[[i]] <- abs(grad_Ws - grad_Ws_sensit[[i]])
+      }
+      
+      ##find maximum differences over the multiple runs
+      maxGradWsDifference <- do.call(pmax, c(gradWsDifferences, na.rm = TRUE))
+      
+      ##apply differential privacy
+      grad_Ws_New <- differential_privacy(
+        list(
+          og_value = grad_Ws,
+          l1_sens = maxGradWsDifference
+        ),
+        opts$diffPrivEpsilon
+      )
+      
+    }else{grad_Ws_New <-grad_Ws}
+    
+    return(list(grad_Ws=grad_Ws_New, funcVals=funcVals))
   }
   
   LR_funcVal_eval_tasks <- function (W){
@@ -245,7 +402,54 @@ ds.LR_MTL_Trace <- function (X, Y, lam, C, opts, datasources=NULL, nDigits){
     }) 
     names(callys)=names(datasources)
     func=DSI::datashield.aggregate(datasources, callys)  
-    return(sum(unlist(func)) + C * norm(W, 'f')^2)
+    
+    funcVal<-sum(unlist(func)) + C * norm(W, 'f')^2
+    
+    if(is.null(opts$diffPrivEpsilon)==FALSE){
+      
+      ##sensitivity analyses (multiple runs)
+      grad_Ws_sensit<-list()
+      funcVals_sensit<-list()
+      nSimulations<-opts$nRunsSensitAn
+      
+      for(n in 1:nSimulations){
+        
+        callys.sensit=lapply(1:nTasks, function(k){ 
+          W.text=paste0(as.character(W[,k]), collapse=",")
+          cally.sensit <- call('LR_simulateDifferencesDS', W.text, X, Y)
+          return(cally.sensit)
+        })
+        names(callys.sensit)=names(datasources)
+        iter_update_sensit=DSI::datashield.aggregate(datasources, callys.sensit)  
+        
+        grad_w_sensit=sapply(iter_update_sensit, function(x)x[[1]]); 
+        funcVal_sensit=sapply(iter_update_sensit, function(x)x[[2]]); 
+        
+        grad_Ws_sensit[[n]]=grad_w_sensit + 2* C * W
+        funcVals_sensit[[n]]=sum(funcVal_sensit) + C * norm(W, 'f')^2
+      }
+      
+      ##compute differences original-removed
+      differences<-numeric(nSimulations)
+      for(i in 1:nSimulations){
+        differences[[i]] <- abs(funcVal - funcVals_sensit[[i]])
+      }
+      
+      ##find maximum differences over the multiple runs
+      maxDifference <- max(differences)
+      
+      ##apply differential privacy
+      funcValNew <- differential_privacy(
+        list(
+          og_value = funcVal,
+          l1_sens = maxDifference
+        ),
+        opts$diffPrivEpsilon
+      )
+      
+    }else{funcValNew<-funcVal}
+    
+    return(funcValNew)
   }
   
   #################################  
