@@ -68,7 +68,7 @@ Han Cao (hank9cao@gmail.com)
 
 ## Questions and discussions
 
-If you have any questions regarding the implementation or encounter any issues related to dsMTL, please use the [discussion platform on this repository](https://github.com/transbioZI/dsMTLClient/discussions). Alternatively, you may post your queries on the [external dsMTL discussion forum hosted on Google Groups](https://groups.google.com/g/dsmtl-discussion-forum). 
+If you have any questions regarding the implementation or encounter any issues related to dsMTLClient, please use the [discussion platform on this repository](https://github.com/transbioZI/dsMTLClient/discussions). Alternatively, you may post your queries on the [external dsMTL discussion forum hosted on Google Groups](https://groups.google.com/g/dsmtl-discussion-forum). 
 
 ## Useful links
 1. dsMTLBase - federated, privacy-preserving machine-learning and multi-task learning analysis: https://github.com/transbioZI/dsMTLBase
