@@ -538,7 +538,7 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
                          datasources=datasources, nDigits=nDigits)
       #----------
       mse_task=sapply(1:nTasks, function(x) {
-        mse=ds.calcMSE(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", average=F)
+        mse=ds.calcMSE(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", nDigits=nDigits, average=F)
         mse=mse[[1]]*nSubs[x]/sum(nSubs)
         return(mse)})
       mse_fold=rbind(mse_fold, colSums(t(mse_task)))
@@ -561,7 +561,7 @@ ds.LassoCov_CVInSite = function(X=NULL, Y=NULL, type="regress", nfolds=10, lam_r
                          datasources=datasources, nDigits=nDigits)
    #----------
       mcr_task=sapply(1:nTasks, function(x) {
-        mcr=ds.calcMCR(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", average=F)
+        mcr=ds.calcMCR(ws = fit$ws, datasourceTest = datasources[x], X="Xtest", Y="Ytest", nDigits=nDigits, average=F)
         mcr=mcr[[1]]*nSubs[x]/sum(nSubs)
         return(mcr)})
       mcr_fold=rbind(mcr_fold, colSums(t(mcr_task)))
