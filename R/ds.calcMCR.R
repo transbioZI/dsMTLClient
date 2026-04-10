@@ -30,13 +30,18 @@
 #' @title Calculate missing classification rate (MCR)
 #' @description Calculate missing classification rate (MCR) on the target server
 #' @param ws The list of coefficient vectors for all servers   
+#' @param datasourceTest  The connection of the target server
 #' @param X The name of design matrices   
 #' @param Y The name of labels   
-#' @param datasourceTest  The connection of the target server
+#' @param nDigits The number of digits to round each coefficient for network transmission. 
+#'   Controls the trade-off between numerical precision and data transfer size. 
+#'   Recommended: 10 for most applications, 6-8 for large-scale data, 12-15 for high precision requirements.
 #' @param average The indicator to average or not the prediction probability over all coefficient vectors
 #' 
 #' @return The MCR of each coefficient vectors (or averaged MCR)
-#' @details Calculate missing classification rate (MCR) on the target server
+#' @details Calculate missing classification rate (MCR) on the target server. 
+#'   The coefficient matrix is serialized to a string for transmission, with precision 
+#'   controlled by nDigits to balance accuracy and network efficiency.
 #' 
 #' @import DSI
 #' @export  
@@ -44,9 +49,9 @@
 ################################################################################
 
 
-ds.calcMCR = function(ws=ws, datasourceTest, X, Y, average=T){
+ds.calcMCR = function(ws=ws, datasourceTest, X, Y, nDigits, average=T){
   ws.vec=c(nrow(ws), as.vector(ws))
-  ws.text=paste0(as.character(ws.vec), collapse=",")
+  ws.text=paste0(as.character(round(ws.vec, nDigits)), collapse=",")
   cally <- call('calcMCRDS', ws.text, X, Y, average)
   mcr=DSI::datashield.aggregate(datasourceTest, cally)  
   return(mcr)
